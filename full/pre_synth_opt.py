@@ -43,12 +43,6 @@ class IRExtractionPass(Visitor):
             sign = False
         return DType(base, sign)
 
-    def decl_typed(self, tree):
-        self.opt_decl(tree)
-
-    def decl_def(self, tree):
-        self.opt_decl(tree)
-
     def decl(self, tree):
         self.opt_decl(tree)
     
@@ -96,7 +90,7 @@ class IRExtractionPass(Visitor):
         params = []
         ports = ({}, {})
         procs = []
-        vars = {}
+        vars = []
         for child in tree.children:
             match child:
                 case Token(type="ID"):
@@ -105,16 +99,53 @@ class IRExtractionPass(Visitor):
                     params = self.visit_return(child)
                 case Tree(data="port_decl_list"):
                     ports = self.visit_return(child)
+                case Tree(data="decl"):
+                    vars.append(self.visit_return(child))
+                case Tree(data="localparam"):
+                    vars.append(self.visit_return(child))
         self.modules[module_name] = Module(module_name, params, ports, vars, procs)
 
-class ConstantFolder(Transformer):
-    def __init__(self):
-        self.constants = {}
+class ConstantFoldingPass(Transformer):
+    def __init__(self, module):
+        self.module = module
 
-    def constant(self, value):
-        return value
+    @v_args(tree=True)
+    def slice(self, tree):
+        dim_list = []
+        var_name = None
+        print("SLICE")
+        for child in tree.children:
+            match child:
+                case [Token(type="LITERAL", value=repr)]:
+                    print("HERE")
+                    return Literal(repr)
+                case [Token(type="VAR", value=var, children=children)]:     
+                    var_name = var
+                case Tree(data="dim", children=[start, end]):
+                    dim_list.append((start, end))
+                case Tree(data="dim", children=[start]):
+                    dim_list.append((start,))
+        return Slice(var_name, dim_list)
     
-    def add(self, a, b):
-        if isinstance(a, int) and isinstance(b, int):
-            return a + b
-        return a + b
+    def dtype(self,tree):
+        print("DTYPE")
+        return tree
+    
+    def var(self, tree):
+        print("VAR")
+        return tree
+    
+    def module(self, tree):
+        print("MODULE")
+        return tree
+        
+def constantFoldModule(module, tree):
+    cfp = ConstantFoldingPass(module)
+    cfp.transform(tree)
+    # for var in module.var_map.values():
+    #     if(var.expr is not None):
+    #         cfp.transform(var.expr)
+    #         if(var.expr.constant_value is not None):
+    #             var.constant_value = var.expr.constant_value
+    #             var.expr = None
+

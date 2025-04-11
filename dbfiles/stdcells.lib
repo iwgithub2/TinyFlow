@@ -1,0 +1,19 @@
+{
+    "cells":{
+        "NAND2D1": {
+            "pins":{
+                "a1": "input",
+                "a2": "input",
+                "y": "not (a1 and a2)"
+            },
+            "dimen": [1.5,1]
+        },
+        "INVD1":{
+            "pins":{
+                "a": "input",
+                "out": "not a"
+            },
+            "dimen": [1,1]
+        }
+    }
+}

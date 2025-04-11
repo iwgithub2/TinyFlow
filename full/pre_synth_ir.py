@@ -1,9 +1,9 @@
 from lark.tree import Tree
 from enum import Enum
-from pretty_stream import PrettyStream
+from PrettyStream import PrettyStream
+import re
 
 class PreSynthIR(Tree):
-    
     def __repr__(self):
         p = PrettyStream()
         return self.pretty_print(p).cache
@@ -35,18 +35,21 @@ class DType(PreSynthIR):
         self.base_type = base
         self.sign = sign
         self.dim = dim
+        self.data = "dtype"
+        self.children = dim[0]+dim[1]
     
     def pretty_print(self, p):
         return p.append(DType.repr_dim(self.dim[0]),str(self.base_type),DType.repr_dim(self.dim[1]))
         
     
 class Expr(PreSynthIR):
-    def __init__(self, data, children, is_constant=False, type:DType=None, dims=([],[])):
+    def __init__(self, data, children, constant_value=None, type:DType=None, dims=([],[])):
         self.data = data
         self.children = children
-        self.is_constant = is_constant
+        self.constant_value = constant_value
         self.type = type
         self.dims = dims
+        self._meta = None
 
     def __repr__(self):
         return self.data + " " + str(self.children)
@@ -54,12 +57,59 @@ class Expr(PreSynthIR):
     def pretty_print(self, p):
         return p << [str(self.data), self.children]
     
+class Literal(Expr):
+    pattern = re.compile(r"^(?P<width>\d+)'(?P<base>[dDhHbBoO])(?P<number>[0-9a-fA-F_]+)$")
+
+    def __init__(self, repr:str):
+        m = Literal.pattern.match(repr)
+        if not m:
+            raise ValueError("Not a valid Verilog literal")
+        width = int(m.group("width"))
+        base_char = m.group("base").lower()
+        if base_char == "d":
+            base = 10
+        elif base_char == "h":
+            base = 16
+        elif base_char == "b":
+            base = 2
+        elif base_char == "o":
+            base = 8
+        else:
+            raise ValueError("Unknown base")
+        
+        number_str = m.group("number").replace("_", "")
+        decimal_val = int(number_str, base)
+        self.value = decimal_val
+        self.bit_width = width
+        self.repr = repr
+        self.constant_value = decimal_val
+        self.dim = ([width-1,0],[])
+
+    def __init__(self, bit_width:int, value:int, repr:str):
+        self.bit_width = bit_width
+        self.value = value
+        self.repr = repr
+
+    def pretty_print(self, p):
+        return p.append_token(self.repr)
+    
+class Slice(Expr):
+    def __init__(self, var:str, dims = []):
+        self.var = var
+        self.dims = dims
+        self.constant_value = None
+
+    def pretty_print(self, p):
+        return p << [self.expr, DType.repr_dim(self.dims)]
+    
 class Var(PreSynthIR):
     def __init__(self, name:str, data_type:DType, constant_value=None, expr:Expr=None):
         self.name = name
         self.data_type = data_type
         self.constant_value = constant_value
         self.expr = expr
+        self.data = "var"
+        self.children = [data_type, expr]
 
     def pretty_print(self, p):
         if(self.constant_value is not None):
@@ -69,8 +119,8 @@ class Var(PreSynthIR):
 class Module(PreSynthIR):
     def __init__(self, name:str, params=[], ports=([],[]), vars=[], procs=[]):
         self.name = name
-        self.vars = {}
-        print(ports)
+        self.var_map = {}
+        self.children = []
         for var in vars:
             self.add_var(var)
         self.ports = (set(),set())
@@ -81,14 +131,18 @@ class Module(PreSynthIR):
         self.params = set()
         for param in params:
             self.add_param(param)
-        self.procs = procs
+        for proc in procs:
+            self.add_proc_block(proc)
         self.labeled_blocks = {}
+        self.data = "module"
         
     def add_var(self, var:Var):
-        self.vars[var.name] = var
+        self.var_map[var.name] = var
+        self.children.append(var)
     
     def add_proc_block(self, proc: Tree):
         self.procs.append(proc)
+        self.children.append(proc)
     
     def add_inport(self, port: Var):
         self.ports[0].add(port.name)
@@ -104,7 +158,7 @@ class Module(PreSynthIR):
 
     def pretty_print(self, p):
         with p << f"module {self.name}":
-            for var in self.vars.values():
+            for var in self.var_map.values():
                 if(var.name in self.ports[0]):
                     p >> "input"
                 elif(var.name in self.ports[1]):

@@ -1,0 +1,68 @@
+?start: module
+
+//=============================================================================
+// Module Headers Syntax
+//=============================================================================
+
+// Module Definition
+module: "module" ID port_decl_list? ";" _top_blocks* "endmodule"
+
+// Module Port Declarations
+port_decl_list: "(" port_decl* ")"
+port_decl: DIR "logic"? ID
+
+DIR: "input" | "output"
+
+_top_blocks: assignment
+           | decl
+
+//=============================================================================
+// Assignment Syntax
+//=============================================================================
+
+assignment: "assign" ID "=" expr ";"
+
+//=============================================================================
+// Declaration Syntax
+//=============================================================================
+
+decl: "logic" ID ";"
+
+//=============================================================================
+// Expression Syntax
+//=============================================================================
+?expr: atom "|" atom -> bit_or
+    | atom "&" atom -> bit_and
+    | atom "~&" atom -> bit_nand
+    | atom "~|" atom -> bit_nor
+    | atom "^" atom -> bit_xor
+    | atom "~^" atom -> bit_xnor
+    | "~" atom -> bit_not
+    | atom
+
+?atom: "(" expr ")"
+     | ID 
+     | LITERAL
+
+ID: /(?!logic\b)[a-zA-Z_][a-zA-Z0-9_]*/
+
+// Literals
+LITERAL: "1'b0"
+       | "1'b1"
+       | "1"
+       | "0"
+
+// Token Definitions
+COMMENT: "//" /[^\n]*/ NEWLINE
+NEWLINE: "\n"
+MULTILINE_COMMENT: /\/\*(\*(?!\/)|[^*])*\*\//
+
+%import common.CNAME
+%import common.ESCAPED_STRING
+%import common.WS
+
+%ignore WS
+%ignore COMMENT
+%ignore MULTILINE_COMMENT
+%ignore NEWLINE
+%ignore ","

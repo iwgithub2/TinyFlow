@@ -190,8 +190,7 @@ expr: ternary
       | "int'(" expr ")" -> cast_int
       | slice
 
-?slice: slice dim
-      | VAR
+slice: VAR dim*
       | LITERAL
        
 

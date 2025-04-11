@@ -12,7 +12,7 @@
 `include "spi/cmn/queues.v"
 
 module spi_helpers_Minion_Adapter #(
-  parameter int nbits = 8,
+  parameter int nbits = 4'd8,
   parameter int num_entries = 1
 ) (
   input  logic             clk,
