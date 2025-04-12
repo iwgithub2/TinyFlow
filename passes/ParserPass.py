@@ -4,6 +4,17 @@ from db.TinyDB import TinyDB
 from db.Node import Node
 from db.LogicNodes import *
 
+def parser_pass(input_file):
+    """
+    Parse the input file and return the database
+    """
+    vprint_title("Parser Pass")
+    ast = parse(input_file)
+    db = extract_db(ast)
+    vprint("Parsed:", db,v=INFO)
+    vprint_pretty(db,v=VERBOSE)
+    return db
+
 def parse(filename, grammar="grammars/minisv.lark"):
     with open(filename) as f:
         text = f.read()
@@ -82,14 +93,3 @@ def visit_expr(ast_node):
             case _:
                 err_msg(f"Unknown token type: {ast_node.type}")
     return ast_node
-
-def parser_pass(input_file):
-    """
-    Parse the input file and return the database
-    """
-    vprint_title("Parser Pass")
-    ast = parse(input_file)
-    db = extract_db(ast)
-    vprint("Parsed:", db,v=INFO)
-    vprint_pretty(db,v=VERBOSE)
-    return db

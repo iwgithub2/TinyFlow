@@ -4,25 +4,25 @@ from db.LogicNodes import *
 from utils.PrettyStream import *
 
 def NodeFactory(cell_name, pins, forms=[]):
-    inputs = []
+    inputs_pins = []
     output_func = None
     output_pin = None
     tree_forms = []
     for pin_name, pin_value in pins.items():
         if pin_value == 'input':
-            inputs.append(pin_name)
+            inputs_pins.append(pin_name)
     for pin_name, pin_value in pins.items():
         if pin_value != 'input':
             output_pin = pin_name
-            output_func = eval(f"lambda {','.join(inputs)}:{pin_value}")
+            output_func = eval(f"lambda {','.join(inputs_pins)}:{pin_value}")
     for form in forms:
-        tree_forms.append(eval(form,None,{i:i for i in inputs}))
-    vprint(f"Loaded cell {cell_name}({','.join(inputs)})->{output_pin} with {len(tree_forms)} forms", v=VERBOSE)
+        tree_forms.append(eval(form,None,{i:i for i in inputs_pins}))
+    vprint(f"Loaded cell {cell_name}({','.join(inputs_pins)})->{output_pin} with {len(tree_forms)} forms", v=VERBOSE)
 
     def __init__(self, *inputs, out=None):
         super(self.__class__, self).__init__(inputs,out=out)
         self.cell_name = cell_name
-        self.input_pins = inputs
+        self.input_pins = inputs_pins
         self.output_func = output_func
         self.output_pin = output_pin
         def eval_cell(*inputs):

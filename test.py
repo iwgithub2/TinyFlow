@@ -16,3 +16,5 @@ db_legal = logic_legalize_pass(db)
 
 lib = TinyLib("dbfiles/stdcells.lib")
 db_mapped = tech_mapping_pass(db_legal, lib)
+
+db_mapped.dump_verilog("FullAdder_mapped.v")

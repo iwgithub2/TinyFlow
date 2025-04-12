@@ -81,14 +81,13 @@ def vprint_title(title, v=INFO):
     vprint(f"{'='*l_pad_len} {title} {'='*r_pad_len}\n",v=v)
 
 class PrettyStream():
-    def __init__(self):
+    def __init__(self, sep='  ', trail_sep='- '):
         self.depth = 0
-        self.notabdepth = 0
-        self.sep = '  '
+        self.sep = sep
         self.cache = ""
         self.prefix = ""
         self.empty_line = True
-        self.trail_sep = '- '
+        self.trail_sep = trail_sep
 
     def clear(self):
         self.cache = ""

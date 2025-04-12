@@ -74,6 +74,14 @@ class Node():
                 input_set.add(i)
         return input_set
     
+    def get_all_intermediate(self):
+        inter_set = set()
+        for i in self:
+            if isinstance(i, Node):
+                inter_set.add(i.output_signal)
+        inter_set.remove(self.output_signal)
+        return inter_set
+    
     def get_all_input_pattern(self):
         input_set = self.get_all_leaf()
         input_patterns = product([0, 1], repeat=len(input_set))
@@ -138,3 +146,35 @@ class Node():
                 return False
         vprint("The nodes are logically equivalent", v=DEBUG)
         return True
+    
+    def gate_count(self):
+        """
+        Counts the gates in the node
+        """
+        gate_count = {}
+        for i in self:
+            if isinstance(i, Node):
+                if i.cell_name in gate_count:
+                    gate_count[i.cell_name] += 1
+                else:
+                    gate_count[i.cell_name] = 1
+        return gate_count    
+    
+    def to_netlist(self, out=None):
+        """
+        Converts the node to a netlist
+        """
+        netlist = []
+        conn = {}
+        for input, c in zip(self.input_pins, self.children):
+            if isinstance(c, Node):
+                conn[input] = c.output_signal
+            else:
+                conn[input] = c
+
+        conn[self.output_pin] = self.output_signal if out is None else out
+        netlist.append((self.cell_name,conn))
+        for c in self.children:
+            if isinstance(c, Node):
+                netlist += c.to_netlist()
+        return netlist
