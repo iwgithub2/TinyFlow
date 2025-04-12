@@ -1,4 +1,9 @@
 {
+    "library":{
+        "name":"TinyLib",
+        "version":"1.0",
+        "description":"Minimal standard cell library"
+    },
     "cells":{
         "NAND2D1": {
             "pins":{
@@ -6,14 +11,35 @@
                 "a2": "input",
                 "y": "not (a1 and a2)"
             },
-            "dimen": [1.5,1]
+            "dimen": [1.5,1],
+            "cost": 2,
+            "forms":[
+                "NAND(a1,a2)"
+            ]
         },
         "INVD1":{
             "pins":{
                 "a": "input",
                 "out": "not a"
             },
-            "dimen": [1,1]
+            "dimen": [1,1],
+            "cost": 1,
+            "forms":[
+                "INV(a)",
+                "NAND(a,a)"
+            ]
+        },
+        "NOR2D1":{
+            "pins":{
+                "a1": "input",
+                "a2": "input",
+                "y": "not (a1 or a2)"
+            },
+            "cost": 3,
+            "dimen": [1.5,1],
+            "forms":[
+                "INV(NAND(INV(a1), INV(a2)))"
+            ]
         }
     }
 }

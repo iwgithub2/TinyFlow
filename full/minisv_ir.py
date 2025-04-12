@@ -1,8 +1,8 @@
 from enum import Enum
-from PrettyStream import PrettyStream
+from utils.PrettyStream import PrettyStream
 from lark import Tree, Token
 from itertools import permutations, product
-from PrettyStream import vprint, QUIET, INFO, VERBOSE, DEBUG, ALL
+from utils.PrettyStream import vprint, QUIET, INFO, VERBOSE, DEBUG, ALL
 
 class Module():
     def __init__(self, name):

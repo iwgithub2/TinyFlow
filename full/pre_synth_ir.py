@@ -1,6 +1,6 @@
 from lark.tree import Tree
 from enum import Enum
-from PrettyStream import PrettyStream
+from utils.PrettyStream import PrettyStream
 import re
 
 class PreSynthIR(Tree):

@@ -1,8 +1,8 @@
 from lark import Lark, Tree, Token
-from PrettyStream import *
-from TinyDB import TinyDB
-from Node import Node
-from LogicNodes import *
+from utils.PrettyStream import *
+from db.TinyDB import TinyDB
+from db.Node import Node
+from db.LogicNodes import *
 from copy import deepcopy
 
 def logic_legalize_pass(db: TinyDB):
@@ -10,6 +10,7 @@ def logic_legalize_pass(db: TinyDB):
     Logic legalization pass for the TinyDB
     """
     vprint_title("Logic Legalization Pass", v=INFO)
+    original_db = db
     db = deepcopy(db)
     for name, tree in db.vars.items():
         vprint(f"Legalizing pin {name}", v=VERBOSE)
@@ -18,6 +19,8 @@ def logic_legalize_pass(db: TinyDB):
         db.vars[name] = tree
     vprint("Legalized:", db,v=INFO)
     vprint_pretty(db,v=VERBOSE)
+    vprint(f"Validating legalized database against original...", v=INFO)
+    assert(db.logical_eq(original_db))
     return db
 
 def legalize_node(node: Node):

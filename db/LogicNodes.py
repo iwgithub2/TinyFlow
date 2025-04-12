@@ -1,4 +1,4 @@
-from Node import Node
+from db.Node import Node
 
 class NAND(Node):
     def __init__(self, a1, a2, out=None):

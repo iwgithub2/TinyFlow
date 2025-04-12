@@ -1,16 +1,10 @@
 from itertools import permutations, product
 from math import pi
-from PrettyStream import PrettyStream, vprint, QUIET, INFO, VERBOSE, DEBUG, ALL
+from utils.PrettyStream import FAILED, PASSED, PrettyStream, err_msg, vprint, QUIET, INFO, VERBOSE, DEBUG, ALL
 from enum import Enum
 import json
-from Node import *
-
-def load_tiny_lib(lib_file="dbfiles/stdcells.lib"):
-    if lib_file is not None:
-        with open(lib_file, 'r') as file:
-            data = json.load(file)
-            for key, value in data["cells"].items():
-                globals()[key] = NodeFactory(key, value["pins"])
+from db.Node import *
+from db.LogicNodes import *
 
 class TinyDB:
     """
@@ -83,13 +77,17 @@ class TinyDB:
         """
         Compares two libraries for logical equivalence.
         """
+        vprint("Comparing database equivalence", v=VERBOSE)
         for pin, tree in self.vars.items():
             if pin not in other.vars:
+                vprint("Databases are not logically equivalent", v=FAILED)
                 return False
             if tree is None and other.vars[pin] is None:
                 continue
             if not tree.logical_eq(other.vars[pin]):
+                vprint("Databases are not logically equivalent", v=FAILED)
                 return False
+        vprint("Databases are logically equivalent", v=PASSED)
         return True
 
     def pretty(self, p:PrettyStream):
@@ -109,6 +107,13 @@ class TinyDB:
             p << ["vars"]
             with p:
                 for k, v in self.vars.items():
+                    # p << [ k, ":" ]
+                    # if isinstance(v, Node):
+                    #     v.pretty(p)
+                    # elif isinstance(v, str):
+                    #     p << [v]
+                    # else:
+                    #     p << [str(v)]
                     p << [ f'{k}:', str(v), ]
         return p.cache
 

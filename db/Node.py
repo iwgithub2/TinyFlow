@@ -1,7 +1,7 @@
 from itertools import product
 from math import pi
 from numbers import Number
-from PrettyStream import PrettyStream, vprint, QUIET, INFO, VERBOSE, DEBUG, ALL
+from utils.PrettyStream import PrettyStream, vprint, QUIET, INFO, VERBOSE, DEBUG, ALL
 from enum import Enum
 import json   
 
@@ -26,13 +26,12 @@ class Node():
     counter = 0
     var_map = {}
 
-    def new_node(node):
+    def new_node():
         """
         Get a globally unique identifier for a node's output
         This identifier will be used for mapping the node to its output.
         """
         var =  f"{Node.counter}w"
-        Node.var_map[var] = node
         Node.counter += 1
         return var
     
@@ -50,10 +49,12 @@ class Node():
         self.children = children
         self.input_pins = []
         self.output_pin = None
-        self.output_signal = Node.new_node(self) if out is None else out
+        self.output_signal = Node.new_node() if out is None else out
+        Node.var_map[self.output_signal] = self
         self.output_func = None
         self.optimal_match = None
         self.cuts = []
+        self.tree_forms = []
 
     def in_order_iterator(self):
         for c in self.children:
@@ -120,43 +121,20 @@ class Node():
         """
         Compares two tree for logical equivalence.
         """
+        vprint(f"Comparing nodes for logical equivalence", v=DEBUG)
         input_set = self.get_all_leaf()
         other_input_set = other.get_all_leaf()
         if(input_set != other_input_set):
             vprint(f'Leaf mismatch: {input_set} vs {other_input_set}',v=VERBOSE)
             return False
         if(len(input_set) > 7):
-            vprint(f'Skipping logical equivalence with more than 7 inputs', v=INFO)
+            vprint(f'Skipping logical equivalence check with more than 7 inputs', v=INFO)
             return False
-        for env in self.get_all_input_pattern():
+        all_patterns = self.get_all_input_pattern()
+        vprint(f"Testing {len(all_patterns)} patterns", v=DEBUG)
+        for env in all_patterns:
             if(self.eval(env) != other.eval(env)):
                 vprint(f"Test Failed with env {env}", v=DEBUG)
                 return False
+        vprint("The nodes are logically equivalent", v=DEBUG)
         return True
-
-def NodeFactory(cell_name, pins):
-    inputs = []
-    output_func = None
-    output_pin = None
-    for pin_name, pin_value in pins.items():
-        if pin_value == 'input':
-            inputs.append(pin_name)
-    for pin_name, pin_value in pins.items():
-        if pin_value != 'input':
-            output_pin = pin_name
-            output_func = eval(f"lambda {','.join(inputs)}:{pin_value}")
-
-    def __init__(self, *inputs, out=None):
-        super(self.__class__, self).__init__(inputs,out=out)
-        self.cell_name = cell_name
-        self.input_pins = inputs
-        self.output_func = output_func
-        self.output_pin = output_pin
-
-        def eval_cell(*inputs):
-            return self.output_func(*inputs)
-        
-        self.eval_cell = eval_cell
-                
-    newclass = type(cell_name, (Node,),{"__init__": __init__})
-    return newclass

@@ -1,10 +1,10 @@
 from lark import Lark, Tree, Token
-from PrettyStream import *
-from TinyDB import TinyDB
-from Node import Node
-from LogicNodes import *
+from utils.PrettyStream import *
+from db.TinyDB import TinyDB
+from db.Node import Node
+from db.LogicNodes import *
 
-def parse(filename, grammar="minisv.lark"):
+def parse(filename, grammar="grammars/minisv.lark"):
     with open(filename) as f:
         text = f.read()
     with open(grammar) as f:
@@ -87,7 +87,7 @@ def parser_pass(input_file):
     """
     Parse the input file and return the database
     """
-    vprint_title("PARSER PASS")
+    vprint_title("Parser Pass")
     ast = parse(input_file)
     db = extract_db(ast)
     vprint("Parsed:", db,v=INFO)

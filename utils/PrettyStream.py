@@ -1,6 +1,3 @@
-import contextlib
-from textwrap import indent
-
 ERROR = -1
 QUIET = 0
 FAILED = 1

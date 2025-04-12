@@ -2,7 +2,7 @@ from minisv_ir import *
 from lark.visitors import Visitor, Transformer, v_args
 from lark.tree import Tree
 from lark.lexer import Token
-from PrettyStream import vprint, PrettyStream
+from utils.PrettyStream import vprint, PrettyStream
 import math
 
 class IRExtractionPass(Visitor):
