@@ -1,10 +1,11 @@
 ERROR = -1
 QUIET = 0
-FAILED = 1
-PASSED = 2
-INFO = 3
-VERBOSE = 4
-DEBUG = 5
+WARN = 1
+FAILED = 2
+PASSED = 3
+INFO = 4
+VERBOSE = 5
+DEBUG = 6
 ALL = 100
 
 verbose_level = QUIET
@@ -25,6 +26,7 @@ RESET = '\033[0m'
 print_colors = {
     ERROR:      RED,
     QUIET:      WHITE,
+    WARN:       YELLOW,
     FAILED:     RED,
     PASSED:     GREEN,
     INFO:       CYAN,
@@ -36,6 +38,7 @@ print_colors = {
 print_header = {
     ERROR:      f'[ ERROR] ' ,
     QUIET:      "",
+    WARN:       f'[ WARN ] ',
     FAILED:     f'[FAILED] ',
     PASSED:     f'[PASSED] ',
     INFO:       f'[  INFO] ',

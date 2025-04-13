@@ -1,9 +1,11 @@
+from ftplib import error_temp
 from itertools import product
 from math import pi
 from numbers import Number
-from utils.PrettyStream import PrettyStream, vprint, QUIET, INFO, VERBOSE, DEBUG, ALL
+from utils.PrettyStream import *
 from enum import Enum
 import json   
+from copy import copy
 
 class Node():
     """
@@ -67,11 +69,14 @@ class Node():
     def __iter__(self):
         return self.in_order_iterator()
 
-    def get_all_leaf(self):
+    def get_all_leaf(self, db=None):
         input_set = set()
         for i in self:
             if isinstance(i,str):
-                input_set.add(i)
+                if db is not None and i in db.vars and isinstance(db.vars[i],Node):
+                    input_set |= db.vars[i].get_all_leaf(db)
+                else:
+                    input_set.add(i)
         return input_set
     
     def get_all_intermediate(self):
@@ -82,8 +87,22 @@ class Node():
         inter_set.remove(self.output_signal)
         return inter_set
     
-    def get_all_input_pattern(self):
-        input_set = self.get_all_leaf()
+    def copy(self, new_wire=True):
+        new_node = copy(self)
+        if new_wire:
+            new_node.output_signal = Node.new_node()
+        Node.var_map[new_node.output_signal] = new_node
+        new_children = []
+        for c in self.children:
+            if isinstance(c,Node):
+                new_children.append(c.copy(new_wire))
+            else:
+                new_children.append(c)
+        new_node.children = new_children
+        return new_node
+    
+    def get_all_input_pattern(self,db=None):
+        input_set = self.get_all_leaf(db)
         input_patterns = product([0, 1], repeat=len(input_set))
         input_envs = [dict(zip(list(input_set), bits)) for bits in input_patterns]
         return input_envs
@@ -108,7 +127,7 @@ class Node():
     def eval_cell(self, *inputs):
         pass
     
-    def eval(self, env_dict=None, **env):
+    def eval(self, env_dict=None, db=None,**env):
         """
         Evaluate the node given an environment
         """
@@ -116,32 +135,38 @@ class Node():
         child_env = []
         for child in self.children:
             if isinstance(child, Node):
-                child_env.append(child.eval(env))
+                if child.output_signal in env:
+                    child_env.append(env[child])
+                else:
+                    child_env.append(child.eval(env,db))
             elif isinstance(child, Number):
                 child_env.append(child)
-            elif env[child] is not None:
+            elif child in env:
                 child_env.append(env[child])
+            elif db is not None and child in db.vars and isinstance(db.vars[child],Node):
+                child_env.append(db.vars[child].eval(env,db))
             else:
+                err_msg(f"Insufficient env: variable {child} undefined")
                 raise ValueError(f"Insufficient env: variable {child} undefined")
         return self.output_func(*child_env)
     
-    def logical_eq(self, other):
+    def logical_eq(self, other, my_db=None, other_db=None):
         """
         Compares two tree for logical equivalence.
         """
         vprint(f"Comparing nodes for logical equivalence", v=DEBUG)
-        input_set = self.get_all_leaf()
-        other_input_set = other.get_all_leaf()
+        input_set = self.get_all_leaf(my_db)
+        other_input_set = other.get_all_leaf(other_db)
         if(input_set != other_input_set):
-            vprint(f'Leaf mismatch: {input_set} vs {other_input_set}',v=VERBOSE)
+            err_msg(f'Leaf mismatch: {input_set} vs {other_input_set}')
             return False
         if(len(input_set) > 7):
-            vprint(f'Skipping logical equivalence check with more than 7 inputs', v=INFO)
+            err_msg(f'Skipping logical equivalence check with more than 7 inputs')
             return False
-        all_patterns = self.get_all_input_pattern()
+        all_patterns = self.get_all_input_pattern(my_db)
         vprint(f"Testing {len(all_patterns)} patterns", v=DEBUG)
         for env in all_patterns:
-            if(self.eval(env) != other.eval(env)):
+            if(self.eval(env,my_db) != other.eval(env,other_db)):
                 vprint(f"Test Failed with env {env}", v=DEBUG)
                 return False
         vprint("The nodes are logically equivalent", v=DEBUG)

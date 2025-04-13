@@ -12,23 +12,25 @@ def logic_legalize_pass(db: TinyDB):
     vprint_title("Logic Legalization Pass", v=INFO)
     original_db = db
     db = deepcopy(db)
+    new_vars={}
     for name, tree in db.vars.items():
         vprint(f"Legalizing pin {name}", v=VERBOSE)
         if isinstance(tree, Node):
-            tree = legalize_node(deepcopy(tree))
+            tree = legalize_node(deepcopy(tree),db,new_vars)
         db.vars[name] = tree
+    db.vars |= new_vars
     vprint("Legalized:", db,v=INFO)
     vprint_pretty(db,v=VERBOSE)
     vprint(f"Validating legalized database against original...", v=INFO)
     assert(db.logical_eq(original_db))
     return db
 
-def legalize_node(node: Node):
+def legalize_node(node: Node, db:TinyDB, new_vars={}):
     """
     Logic legalization pass for a single node
     """
     vprint(f"Legalizing node {node}", v=DEBUG)
-    children = [ legalize_node(c) if isinstance(c, Node) else c for c in node.children ]
+    children = [ legalize_node(c,db,new_vars) if isinstance(c, Node) else c for c in node.children ]
     a = children[0]
     b = children[1] if len(children) > 1 else None
     match node:
@@ -43,6 +45,12 @@ def legalize_node(node: Node):
         case NOR():
             return INV(NAND(INV(a), INV(b)))
         case XOR():
+            if isinstance(a,Node):
+                new_vars[a.output_signal]=a
+                a = a.output_signal
+            if isinstance(b,Node):
+                new_vars[b.output_signal]=b
+                b = b.output_signal
             return NAND(NAND(a, INV(b)), NAND(INV(a), b))
         case _:
             err_msg(f"Unknown node type: {node}")

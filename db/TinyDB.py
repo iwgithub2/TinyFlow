@@ -78,13 +78,14 @@ class TinyDB:
         Compares two libraries for logical equivalence.
         """
         vprint("Comparing database equivalence", v=VERBOSE)
-        for pin, tree in self.vars.items():
-            if pin not in other.vars:
+        for output in self.outputs:
+            if output not in other.outputs:
                 vprint("Databases are not logically equivalent", v=FAILED)
                 return False
-            if tree is None and other.vars[pin] is None:
+            tree = self.vars[output]
+            if tree is None and other.vars[output] is None:
                 continue
-            if not tree.logical_eq(other.vars[pin]):
+            if not tree.logical_eq(other.vars[output],self,other):
                 vprint("Databases are not logically equivalent", v=FAILED)
                 return False
         vprint("Databases are logically equivalent", v=PASSED)

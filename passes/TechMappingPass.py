@@ -42,13 +42,12 @@ def tech_map(node: Node, lib: TinyLib, top_node=True):
                 continue
             children = []
             for port, wire in result.items():
-                child = Node.find_node(wire)
-                if child is None:
-                    children.append(wire)
-                else:
-                    m, c = tech_map(child, lib, top_node=False)
+                if isinstance(wire,Node):
+                    m, c = tech_map(wire, lib, top_node=False)
                     cost += c
                     children.append(m)
+                else:
+                    children.append(wire)
             tree = cell(*children)
             vprint(f"Found mapping for {node.output_signal} with cost {cost}: {tree}", v=DEBUG if top_node else ALL)
             if cost < best_cost:
@@ -75,9 +74,6 @@ def match_form(node, form, env={}):
             f = form.children[i] # the form's child
             # If child is terminal
             if isinstance(f, str):
-                # break if form's child isn't terminal
-                if not isinstance(c, str):
-                    c = c.output_signal
                 # break if form's terminal is already matched to something else
                 if f in top_env and c != top_env[f]:
                     matching_children = -1
