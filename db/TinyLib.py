@@ -20,15 +20,12 @@ def NodeFactory(cell_name, pins, forms=[]):
 
     def __init__(self, *inputs, out=None):
         super(self.__class__, self).__init__(inputs,out=out)
-        self.cell_name = cell_name
-        self.input_pins = inputs_pins
-        self.output_func = output_func
-        self.output_pin = output_pin
-        def eval_cell(*inputs):
-            return self.output_func(*inputs)
-        self.eval_cell = eval_cell
                 
-    newclass = type(cell_name, (Node,),{"__init__": __init__, "tree_forms": tree_forms, "cell_name": cell_name})
+    newclass = type(cell_name, (Node,),{"__init__": __init__, 
+                                        "tree_forms": tree_forms, 
+                                        "cell_name": cell_name,
+                                        "input_pins":inputs_pins,
+                                        "output_func": output_func})
     return newclass
 
 class TinyLib:

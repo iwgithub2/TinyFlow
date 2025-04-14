@@ -28,6 +28,11 @@ class Node():
     counter = 0
     var_map = {}
 
+    cell_name = None
+    input_pins = []
+    output_func = lambda *_ : False
+    output_pin = None
+
     def new_node():
         """
         Get a globally unique identifier for a node's output
@@ -47,13 +52,9 @@ class Node():
     
     def __init__(self, children, out=None, db=None):
         self.state = Node.State.PRE_SYNTH
-        self.cell_name = None
         self.children = children
-        self.input_pins = []
-        self.output_pin = None
         self.output_signal = Node.new_node() if out is None else out
         Node.var_map[self.output_signal] = self
-        self.output_func = None
         self.optimal_match = None
         self.cuts = []
         self.tree_forms = []
@@ -122,10 +123,7 @@ class Node():
         for c in self.children:
             str_children.append(str(c))
         joined = ",".join(str_children)
-        return f"{self.cell_name}|{self.output_signal}({joined})"
-    
-    def eval_cell(self, *inputs):
-        pass
+        return f"{self.cell_name}({joined})"
     
     def eval(self, env_dict=None, db=None,**env):
         """
@@ -148,13 +146,13 @@ class Node():
             else:
                 err_msg(f"Insufficient env: variable {child} undefined")
                 raise ValueError(f"Insufficient env: variable {child} undefined")
-        return self.output_func(*child_env)
+        return type(self).output_func(*child_env)
     
     def logical_eq(self, other, my_db=None, other_db=None):
         """
         Compares two tree for logical equivalence.
         """
-        vprint(f"Comparing nodes for logical equivalence", v=DEBUG)
+        vprint(f"Comparing {self} with {other} for logical equivalence", v=DEBUG)
         input_set = self.get_all_leaf(my_db)
         other_input_set = other.get_all_leaf(other_db)
         if(input_set != other_input_set):
@@ -166,8 +164,11 @@ class Node():
         all_patterns = self.get_all_input_pattern(my_db)
         vprint(f"Testing {len(all_patterns)} patterns", v=DEBUG)
         for env in all_patterns:
+            se = self.eval(env,my_db)
+            oe = other.eval(env,other_db)
+            vprint(f'Tested Pattern {env}, {int(se)}|{int(oe)}',v=DEBUG)
             if(self.eval(env,my_db) != other.eval(env,other_db)):
-                vprint(f"Test Failed with env {env}", v=DEBUG)
+                vprint(f"Test Failed", v=FAILED)
                 return False
         vprint("The nodes are logically equivalent", v=DEBUG)
         return True

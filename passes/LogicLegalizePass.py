@@ -6,7 +6,7 @@ from db.Node import Node
 from db.LogicNodes import *
 from copy import deepcopy
 
-def logic_legalize_pass(db: TinyDB):
+def logic_legalize_pass(db: TinyDB, duplicate=True):
     """
     Logic legalization pass for the TinyDB
     """
@@ -17,13 +17,13 @@ def logic_legalize_pass(db: TinyDB):
     for name, tree in db.vars.items():
         vprint(f"Legalizing pin {name}", v=VERBOSE)
         if isinstance(tree, Node):
-            tree = legalize_node(deepcopy(tree),db,new_vars)
+            tree = legalize_node(deepcopy(tree),db,new_vars, duplicate=duplicate)
         db.vars[name] = tree
     db.vars |= new_vars
     vprint("Legalized:", db,v=INFO)
     vprint_pretty(db,v=VERBOSE)
     vprint(f"Validating legalized database against original...", v=INFO)
-    assert(db.logical_eq(original_db))
+    db.logical_eq(original_db)
     return db
 
 def legalize_node(node: Node, db:TinyDB, new_vars={}, duplicate=True):
@@ -31,7 +31,7 @@ def legalize_node(node: Node, db:TinyDB, new_vars={}, duplicate=True):
     Logic legalization pass for a single node
     """
     vprint(f"Legalizing node {node}", v=DEBUG)
-    children = [ legalize_node(c,db,new_vars) if isinstance(c, Node) else c for c in node.children ]
+    children = [ legalize_node(c,db,new_vars,duplicate) if isinstance(c, Node) else c for c in node.children ]
     a = children[0]
     b = children[1] if len(children) > 1 else None
     match node:

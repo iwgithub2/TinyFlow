@@ -17,6 +17,44 @@
                 "NAND(a1,a2)"
             ]
         },
+        "MUX2D1":{
+            "pins":{
+                "a1": "input",
+                "a2": "input",
+                "s": "input",
+                "y": "a2 if s==1 else a1"
+            },
+            "dimen": [1.5,1],
+            "cost": 2,
+            "forms":[
+                "NAND(NAND(s,a2),NAND(INV(s),a1))"
+            ]
+        },
+        "AOI21D1":{
+            "pins":{
+                "a1": "input",
+                "a2": "input",
+                "b": "input",
+                "z": "not ((a1 and a2) or b)"
+            },
+            "dimen": [3,1],
+            "cost":3,
+            "forms":[
+                "INV(NAND(INV(INV(NAND(a1, a2))), INV(b)))"
+            ]
+        },
+        "XOR2D1":{
+            "pins":{
+                "a1": "input",
+                "a2": "input",
+                "y": "a1 ^ a2"
+            },
+            "dimen": [1.5,1],
+            "cost": 3,
+            "forms":[
+                "NAND(NAND(INV(a1),a2),NAND(a1,INV(a2)))"
+            ]
+        },
         "INVD1":{
             "pins":{
                 "a": "input",
@@ -35,7 +73,7 @@
                 "a2": "input",
                 "y": "not (a1 or a2)"
             },
-            "cost": 3,
+            "cost": 2.5,
             "dimen": [1.5,1],
             "forms":[
                 "INV(NAND(INV(a1), INV(a2)))"

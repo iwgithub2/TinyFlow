@@ -14,13 +14,18 @@ set_verbose_level(DEBUG)
 db = parser_pass("verilog/FullAdder.sv")
 dump_db_graph(db,"generated/db_parsed")
 
-db_legal = logic_legalize_pass(db)
+db_legal = logic_legalize_pass(db,False)
 dump_db_graph(db_legal,"generated/db_legal")
 
 lib = TinyLib("dbfiles/stdcells.lib")
 db_mapped = tech_mapping_pass(db_legal, lib)
 db_mapped.dump_verilog("FullAdder_mapped.v")
 dump_db_graph(db_mapped,"generated/db_mapped")
+
+t11 = db_mapped.vars['11w']
+t11_legal = db_legal.vars['11w']
+
+print(t11.eval(b=1,cin=0))
 
 # dot = graph_db(db)
 # dot.render('db_original',view=True)

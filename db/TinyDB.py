@@ -85,6 +85,7 @@ class TinyDB:
             tree = self.vars[output]
             if tree is None and other.vars[output] is None:
                 continue
+            vprint(f"Comparing output {output}",v=VERBOSE)
             if not tree.logical_eq(other.vars[output],self,other):
                 vprint("Databases are not logically equivalent", v=FAILED)
                 return False

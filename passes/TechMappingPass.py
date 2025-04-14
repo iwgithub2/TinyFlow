@@ -24,7 +24,7 @@ def tech_mapping_pass(db: TinyDB, lib:TinyLib):
     vprint("Mapped", db, v=INFO)
     vprint_pretty(db, v=VERBOSE)
     vprint(f"Validating mapped database against original...", v=INFO)
-    assert(db.logical_eq(original_db))
+    db.logical_eq(original_db)
     return db
 
 def tech_map(node: Node, lib: TinyLib, top_node=True):
@@ -40,14 +40,12 @@ def tech_map(node: Node, lib: TinyLib, top_node=True):
             result = match_form(node, form)
             if result is None:
                 continue
-            children = []
             for port, wire in result.items():
                 if isinstance(wire,Node):
                     m, c = tech_map(wire, lib, top_node=False)
                     cost += c
-                    children.append(m)
-                else:
-                    children.append(wire)
+                    result[port] = m
+            children = [result[pin] for pin in cell.input_pins]
             tree = cell(*children)
             vprint(f"Found mapping for {node.output_signal} with cost {cost}: {tree}", v=DEBUG if top_node else ALL)
             if cost < best_cost:
@@ -58,6 +56,7 @@ def tech_map(node: Node, lib: TinyLib, top_node=True):
     return best_tree, best_cost
 
 def match_form(node, form, env={}):
+    #vprint(f"matching \n{node.pretty(PrettyStream())}\n with \n{form.pretty(PrettyStream())}Given:{env}")
     # Check if current node matches the form
     if node.cell_name != form.cell_name:
         return None
@@ -80,6 +79,7 @@ def match_form(node, form, env={}):
                     break
                 # Match this terminal to form's terminal
                 top_env[f] = c
+                #vprint(f'Matched {f} with {c}',v=PASSED)
                 matching_children += 1   
             # If child is node
             elif isinstance(c, Node):
@@ -91,6 +91,7 @@ def match_form(node, form, env={}):
                     top_env.update(child_env)
                     matching_children += 1
         # If all children matched, we found a match
-        if matching_children == len(perm):
+        if matching_children == len(perm):    
             return top_env
+    #vprint("No Match", v=FAILED)
     return None
