@@ -1,3 +1,4 @@
+from os import dup
 from lark import Lark, Tree, Token
 from utils.PrettyStream import *
 from db.TinyDB import TinyDB
@@ -25,7 +26,7 @@ def logic_legalize_pass(db: TinyDB):
     assert(db.logical_eq(original_db))
     return db
 
-def legalize_node(node: Node, db:TinyDB, new_vars={}):
+def legalize_node(node: Node, db:TinyDB, new_vars={}, duplicate=True):
     """
     Logic legalization pass for a single node
     """
@@ -45,13 +46,22 @@ def legalize_node(node: Node, db:TinyDB, new_vars={}):
         case NOR():
             return INV(NAND(INV(a), INV(b)))
         case XOR():
-            if isinstance(a,Node):
-                new_vars[a.output_signal]=a
-                a = a.output_signal
-            if isinstance(b,Node):
-                new_vars[b.output_signal]=b
-                b = b.output_signal
-            return NAND(NAND(a, INV(b)), NAND(INV(a), b))
+            if not duplicate:
+                if isinstance(a,Node):
+                    new_vars[a.output_signal]=a
+                    a = a.output_signal
+                if isinstance(b,Node):
+                    new_vars[b.output_signal]=b
+                    b = b.output_signal
+                return NAND(NAND(a, INV(b)), NAND(INV(a), b))
+            else:
+                a_copy = a
+                if isinstance(a,Node):
+                    a_copy = a.copy(True)
+                b_copy = b
+                if isinstance(b,Node):
+                    b_copy = b.copy(True)
+                return NAND(NAND(a, INV(b)), NAND(INV(a_copy), b_copy))
         case _:
             err_msg(f"Unknown node type: {node}")
             raise ValueError(f"Unknown node type: {node}")

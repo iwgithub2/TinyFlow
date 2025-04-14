@@ -4,3 +4,4 @@ __pycache__/
 full/
 obsolete/
 generated/
+FullAdder_mapped.v

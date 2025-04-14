@@ -11,7 +11,6 @@ from utils.Grapher import dump_db_graph, graph_db
 
 set_verbose_level(DEBUG)
 
-db = TinyDB("test")
 db = parser_pass("verilog/FullAdder.sv")
 dump_db_graph(db,"generated/db_parsed")
 

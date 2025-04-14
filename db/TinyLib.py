@@ -1,4 +1,3 @@
-from json import load
 from db.Node import *
 from db.LogicNodes import *
 from utils.PrettyStream import *
