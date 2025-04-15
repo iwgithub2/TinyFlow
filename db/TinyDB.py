@@ -96,7 +96,7 @@ class TinyDB:
         vprint("Databases are logically equivalent", v=PASSED)
         return True
 
-    def pretty(self, p:PrettyStream):
+    def pretty(self, p=PrettyStream()):
         """
         Returns the pretty printed database
         """

@@ -4,6 +4,11 @@ from db.Node import Node
 from db.TinyDB import TinyDB
 
 def graph_node(node:Node, dot=None, label=None, prefix="", graphed=set()):
+    if node in graphed:
+        return dot
+    
+    graphed.add(node)
+
     if dot is None:
         dot = Digraph(comment="Tree Visualization")
 

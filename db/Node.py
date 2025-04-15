@@ -41,6 +41,10 @@ class Node():
     def __init__(self, children, out=None):
         self.state = Node.State.PRE_SYNTH
         self.children = children
+        for c in children:
+            if c == 'db' or c == 'env_dict' or c == 'env':
+                err_msg(f"{c} is a reserved keyword and cannot be used as an input")
+                raise ValueError(c)
         self.output_signal = Node.new_node() if out is None else out
         self.optimal_match = None
         self.cuts = []
@@ -94,7 +98,9 @@ class Node():
         input_envs = [dict(zip(list(input_set), bits)) for bits in input_patterns]
         return input_envs
 
-    def pretty(self, p:PrettyStream):
+    def pretty(self, p=None):
+        if p is None:
+            p = PrettyStream()
         p << [f'{self.cell_name}|{self.output_signal}']
         with p:
             for c in self.children:
@@ -131,7 +137,7 @@ class Node():
                 child_env.append(db.vars[child].eval(env,db))
             else:
                 err_msg(f"Insufficient env: variable {child} undefined")
-                raise ValueError(f"Insufficient env: variable {child} undefined")
+                raise ValueError(child)
         return type(self).output_func(*child_env)
     
     def logical_eq(self, other, my_db=None, other_db=None):
@@ -142,7 +148,7 @@ class Node():
         input_set = self.get_all_leaf(my_db)
         other_input_set = other.get_all_leaf(other_db)
         if(input_set != other_input_set):
-            err_msg(f'Leaf mismatch: {input_set} vs {other_input_set}')
+            vprint(f'Leaf mismatch: {input_set} vs {other_input_set}',v=FAILED)
             return False
         if(len(input_set) > 7):
             err_msg(f'Skipping logical equivalence check with more than 7 inputs')
