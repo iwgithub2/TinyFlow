@@ -56,6 +56,14 @@ class TinyDB:
         self.outputs.add(var_name)
         self.add_var(var_name, expr)
 
+    def make_empty_copy(self):
+        new_db = TinyDB(self.name)
+        for input in self.inputs:
+            new_db.add_input(input)
+        for out in self.outputs:
+            new_db.add_output(out)
+        return new_db
+
     def to_json(self):
         """
         Serialize the database to a JSON object for debugging

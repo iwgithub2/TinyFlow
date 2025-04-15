@@ -50,7 +50,7 @@ def visit(ast_node, db):
             case "assignment":
                 match ast_node.children:
                     case [Token("ID",id), expr]:
-                        db.add_var(id, visit_expr(expr))
+                        db.add_var(id, visit_expr(expr,out=id))
             case "decl":
                 db.add_var(ast_node.children[0].value)
             case _:
@@ -58,23 +58,23 @@ def visit(ast_node, db):
                 vprint(ast_node, v=DEBUG)
     return
 
-def visit_expr(ast_node):
+def visit_expr(ast_node, out=None):
     if isinstance(ast_node, Tree):
         match ast_node.data:
             case "bit_or":
-                return OR(visit_expr(ast_node.children[0]), visit_expr(ast_node.children[1]))
+                return OR(visit_expr(ast_node.children[0]), visit_expr(ast_node.children[1]),out=out)
             case "bit_and":
-                return AND(visit_expr(ast_node.children[0]), visit_expr(ast_node.children[1]))
+                return AND(visit_expr(ast_node.children[0]), visit_expr(ast_node.children[1]),out=out)
             case "bit_nand":
-                return NAND(visit_expr(ast_node.children[0]), visit_expr(ast_node.children[1]))
+                return NAND(visit_expr(ast_node.children[0]), visit_expr(ast_node.children[1]),out=out)
             case "bit_nor":
-                return NOR(visit_expr(ast_node.children[0]), visit_expr(ast_node.children[1]))
+                return NOR(visit_expr(ast_node.children[0]), visit_expr(ast_node.children[1]),out=out)
             case "bit_xnor":
-                return XNOR(visit_expr(ast_node.children[0]), visit_expr(ast_node.children[1]))
+                return XNOR(visit_expr(ast_node.children[0]), visit_expr(ast_node.children[1]),out=out)
             case "bit_xor":
-                return XOR(visit_expr(ast_node.children[0]), visit_expr(ast_node.children[1]))
+                return XOR(visit_expr(ast_node.children[0]), visit_expr(ast_node.children[1]),out=out)
             case "bit_not":
-                return INV(visit_expr(ast_node.children[0]))
+                return INV(visit_expr(ast_node.children[0]),out=out)
             case _:
                 err_msg(f"Unknown expression type: {ast_node.data}")
     elif isinstance(ast_node, Token):

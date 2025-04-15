@@ -16,10 +16,8 @@ def graph_node(node:Node, dot=None, label=None, prefix="", graphed=set()):
     # Recursively add all children nodes and connect them via edges.
     for child in node.children:
         if isinstance(child,Node):
-            if child.output_signal not in graphed:
-                graphed.add(child.output_signal)
-                dot.node(child.output_signal, child.cell_name)  # Ensure the child exists in the graph.
-                graph_node(child, dot, prefix=prefix,graphed=graphed)
+            dot.node(child.output_signal, child.cell_name)  # Ensure the child exists in the graph.
+            graph_node(child, dot, prefix=prefix,graphed=graphed)
             dot.edge(node.output_signal, child.output_signal, child.output_signal, fontsize="10")
         else:
             dot.node(prefix+child, child, color="black", fillcolor="darkolivegreen1", style="filled",shape="box")
@@ -33,7 +31,7 @@ def graph_db(db:TinyDB):
         if isinstance(node,Node):
             c = "darkslategray1" if pin in db.outputs else "khaki1"
             cluster.node("pin"+pin,pin,color="black", fillcolor=c, style="filled",shape="box")
-            cluster.edge("pin"+pin,node.output_signal)
+            cluster.edge("pin"+pin,node.output_signal,node.output_signal,fontsize="10")
             graph_node(node, cluster,prefix=pin)
     return cluster
 

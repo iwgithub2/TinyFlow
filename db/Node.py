@@ -35,26 +35,16 @@ class Node():
 
     def new_node():
         """
-        Get a globally unique identifier for a node's output
-        This identifier will be used for mapping the node to its output.
+        Get an identifier for the node for debugging.
         """
         var =  f"{Node.counter}w"
         Node.counter += 1
         return var
     
-    def find_node(var):
-        """
-        Find a node by its globally unique identifier
-        """
-        if(var in Node.var_map):
-            return Node.var_map[var]
-        return None
-    
-    def __init__(self, children, out=None, db=None):
+    def __init__(self, children, out=None):
         self.state = Node.State.PRE_SYNTH
         self.children = children
         self.output_signal = Node.new_node() if out is None else out
-        Node.var_map[self.output_signal] = self
         self.optimal_match = None
         self.cuts = []
         self.tree_forms = []
@@ -92,7 +82,6 @@ class Node():
         new_node = copy(self)
         if new_wire:
             new_node.output_signal = Node.new_node()
-        Node.var_map[new_node.output_signal] = new_node
         new_children = []
         for c in self.children:
             if isinstance(c,Node):
@@ -123,7 +112,7 @@ class Node():
         for c in self.children:
             str_children.append(str(c))
         joined = ",".join(str_children)
-        return f"{self.cell_name}({joined})"
+        return f"{self.cell_name}|{self.output_signal}({joined})"
     
     def eval(self, env_dict=None, db=None,**env):
         """
