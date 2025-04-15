@@ -16,19 +16,16 @@ Install required python packages with pip
 pip install -r requirements.txt
 ```
 
-Running tutorials/examples
-```
-python -m examples.tutorial_1
-```
-
 ## Getting Started
 The frontend of TinyFlow consists three different class:
 - TinyDB (Represents a module as a collection of logic trees)
 - Node (Represents a node in a logic tree)
 - TinyLib (Collection of standard cell informations)
 
-### Tutorials
-Checkout code tutorials in [examples](examples)
+### Tutorials/Examples
+Checkout code tutorials/examples in [examples](examples)
+
+To run tutorial_1, run `python -m examples.tutorial_1` from the TinyFlow root directory
 
 ### Build Logic Trees in TinyFlow 
 First, try out building a logic tree in TinyFlow, TinyFlow provides a set of standard logic nodes in `db.LogicNodes`: 
