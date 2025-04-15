@@ -27,6 +27,9 @@ The frontend of TinyFlow consists three different class:
 - Node (Represents a node in a logic tree)
 - TinyLib (Collection of standard cell informations)
 
+### Tutorials
+Checkout code tutorials in [examples](examples)
+
 ### Build Logic Trees in TinyFlow 
 First, try out building a logic tree in TinyFlow, TinyFlow provides a set of standard logic nodes in `db.LogicNodes`: 
 - `INV`, `AND`, `NAND`, `OR`, `NOR`, `XOR`, `XNOR`
