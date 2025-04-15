@@ -1,7 +1,6 @@
 from lark import Lark, Tree, Token
 from utils.PrettyStream import *
 from db.TinyDB import TinyDB
-from db.Node import Node
 from db.LogicNodes import *
 
 def parser_pass(input_file):

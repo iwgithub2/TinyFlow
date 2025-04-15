@@ -1,8 +1,4 @@
-from itertools import permutations, product
-from math import e, pi
 from utils.PrettyStream import FAILED, PASSED, PrettyStream, err_msg, vprint, QUIET, INFO, VERBOSE, DEBUG, ALL
-from enum import Enum
-import json
 from db.Node import *
 from db.LogicNodes import *
 
@@ -203,7 +199,7 @@ class TinyDB:
                 f.write('\n')
                 f.close()
                 vprint(f"Dumped verilog to {file}", v=INFO)
-        except e:
+        except Exception as e:
             err_msg(f"Failed to write to file {file}", v=FAILED)
             raise e
             

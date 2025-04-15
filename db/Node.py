@@ -1,10 +1,7 @@
-from ftplib import error_temp
 from itertools import product
-from math import pi
 from numbers import Number
 from utils.PrettyStream import *
 from enum import Enum
-import json   
 from copy import copy
 
 class Node():
@@ -24,7 +21,7 @@ class Node():
         POST_SYNTH = 1
         POST_PLACE = 2
         POST_ROUTE = 3
-
+    
     counter = 0
     var_map = {}
 
@@ -141,7 +138,7 @@ class Node():
         """
         Compares two tree for logical equivalence.
         """
-        vprint(f"Comparing {self} with {other} for logical equivalence", v=DEBUG)
+        vprint(f"Comparing\n{self.pretty(PrettyStream())}\nwith\n{other.pretty(PrettyStream())}for logical equivalence", v=DEBUG)
         input_set = self.get_all_leaf(my_db)
         other_input_set = other.get_all_leaf(other_db)
         if(input_set != other_input_set):

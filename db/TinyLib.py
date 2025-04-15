@@ -1,6 +1,7 @@
 from db.Node import *
 from db.LogicNodes import *
 from utils.PrettyStream import *
+import json
 
 def NodeFactory(cell_name, pins, forms=[]):
     inputs_pins = []
