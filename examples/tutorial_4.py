@@ -1,9 +1,9 @@
 #==============================================================================
-# Tutorial 4: Modules and TinyDB
+# Tutorial 4: TinyDB
 #==============================================================================
 
 from db.TinyDB import TinyDB  # Database representing a macro/module
-from db.LogicNodes import AND, INV, OR, XOR
+from db.LogicNodes import AND, OR, XOR
 from utils.PrettyStream import vprint_pretty, vprint, set_verbose_level, DEBUG, INFO
 
 set_verbose_level(DEBUG)
@@ -40,6 +40,15 @@ vprint_pretty(db,v=DEBUG)
 
 vprint("Printing the db short hand:")
 vprint(str(db),v=DEBUG)
+
+# We want to make sure that this database correctly represents a full adder:
+all_patterns = db.get_all_input_pattern()
+vprint("all_patterns for db:")
+vprint(all_patterns, v=DEBUG)
+
+for input in all_patterns:
+    outputs = db.eval(input)
+    vprint("Outputs for input pattern", input, "are", outputs, v=INFO)
 
 # We can make an empty copy of the db when implementing frontend passes
 db_alt = db.make_empty_copy()

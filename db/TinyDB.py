@@ -73,6 +73,12 @@ class TinyDB:
         """
         self.name = json["name"]
 
+    def get_all_input_pattern(self):
+        input_set = self.inputs
+        input_patterns = product([0, 1], repeat=len(input_set))
+        input_envs = [dict(zip(list(input_set), bits)) for bits in input_patterns]
+        return input_envs
+
     def logical_eq(self, other):
         """
         Compares two libraries for logical equivalence.
@@ -80,18 +86,38 @@ class TinyDB:
         vprint("Comparing database equivalence", v=VERBOSE)
         for output in self.outputs:
             if output not in other.outputs:
+                vprint(f'Output {output} not found in other database', v=VERBOSE)
                 vprint("Databases are not logically equivalent", v=FAILED)
                 return False
             tree = self.vars[output]
             if tree is None and other.vars[output] is None:
                 continue
+            if (tree is None) ^ (other.vars[output] is None):
+                vprint(f'Output {output} is not driven in a database', v=VERBOSE)
+                vprint("Databases are not logically equivalent", v=FAILED)
             vprint(f"Comparing output {output}",v=VERBOSE)
             if not tree.logical_eq(other.vars[output],self,other):
                 vprint("Databases are not logically equivalent", v=FAILED)
                 return False
         vprint("Databases are logically equivalent", v=PASSED)
         return True
-
+    
+    def eval(self, env_dict=None, db=None,**env):
+        """
+        Evaluate the database given an environment
+        """
+        env = env if env_dict is None else env_dict
+        result = {}
+        for output in self.outputs:
+            if output in env:
+                err_msg(f"Output {output} conflicts with the environment {env}")
+                raise ValueError(env)
+            if output not in self.vars or self.vars[output] is None:
+                result[output] = "Undriven"
+            else:
+                result[output] = self.vars[output].eval(env, db)
+        return result
+                
     def pretty(self, p=PrettyStream()):
         """
         Returns the pretty printed database

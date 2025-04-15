@@ -29,6 +29,7 @@ class Node():
     input_pins = []
     output_func = lambda *_ : False
     output_pin = None
+    tree_forms = []
 
     def new_node():
         """
@@ -37,6 +38,10 @@ class Node():
         var =  f"{Node.counter}w"
         Node.counter += 1
         return var
+    
+    @classmethod
+    def cell_info(cls):
+        return f"{cls.cell_name}({','.join(cls.input_pins)})->{cls.output_pin} [{len(cls.tree_forms)} form]"
     
     def __init__(self, children, out=None):
         self.state = Node.State.PRE_SYNTH
@@ -48,7 +53,6 @@ class Node():
         self.output_signal = Node.new_node() if out is None else out
         self.optimal_match = None
         self.cuts = []
-        self.tree_forms = []
 
     def in_order_iterator(self):
         for c in self.children:

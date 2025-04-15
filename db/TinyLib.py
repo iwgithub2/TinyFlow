@@ -17,7 +17,6 @@ def NodeFactory(cell_name, pins, forms=[]):
             output_func = eval(f"lambda {','.join(inputs_pins)}:{pin_value}")
     for form in forms:
         tree_forms.append(eval(form,None,{i:i for i in inputs_pins}))
-    vprint(f"Loaded cell {cell_name}({','.join(inputs_pins)})->{output_pin} with {len(tree_forms)} forms", v=VERBOSE)
 
     def __init__(self, *inputs, out=None):
         super(self.__class__, self).__init__(inputs,out=out)
@@ -26,7 +25,11 @@ def NodeFactory(cell_name, pins, forms=[]):
                                         "tree_forms": tree_forms, 
                                         "cell_name": cell_name,
                                         "input_pins":inputs_pins,
+                                        "output_pin": output_pin,
                                         "output_func": output_func})
+    
+    vprint(f"Loaded cell {newclass}", v=VERBOSE)
+
     return newclass
 
 class TinyLib:
@@ -56,3 +59,15 @@ class TinyLib:
 
     def __repr__(self):
         return f"library {self.libname} ({len(self.cells)} cells)"
+    
+    def pretty(self, p=None):
+        """
+        Returns the pretty printed library
+        """
+        if p is None:
+            p = PrettyStream()
+        p << ["Library", self.libname]
+        with p:
+            for k, v in self.cells.items():
+                p << v.cell_info()
+        return p.cache

@@ -35,10 +35,10 @@ print("node1 when a=1 and b=0 outputs:", node1.eval({"a":0,"b":1}))
 
 # If not all variables are defined, eval() will fail
 try:
-    print("\nwe are expecting an error print here:")
+    print("\n** we are expecting an error print below **")
     node1.eval(a=0)
 except ValueError:
-    print("And we caught an exception!")
+    print("And we caught an exception!\n")
     pass
 # Notice that we receive both an error message from terminal and a ValueError exception
 
@@ -50,7 +50,16 @@ assert node1.eval(a=0,b=1) == xor_node.eval(a=0,b=1)
 assert node1.eval(a=1,b=0) == xor_node.eval(a=1,b=0)
 assert node1.eval(a=1,b=1) == xor_node.eval(a=1,b=1)
 
-# This gets very tiring on trees with large number of inputs, so we provide a function for checking this:
+# This seems a little tedious, so we provide a method to extract all input patterns for a tree:
+all_patterns = node1.get_all_input_pattern()
+print("all_patterns for node1:")
+print(all_patterns)
+
+for env in all_patterns:
+    assert node1.eval(env) == xor_node.eval(env)
+    print("node1 and xor_node outputs match for input pattern", env)
+
+# An even simper way to checking this is to use the logical_eq() method
 # logical_eq() checks for logical equivalence between a pair of trees. 
 assert node1.logical_eq(xor_node)
 
@@ -58,4 +67,5 @@ assert node1.logical_eq(xor_node)
 # - have the same set of inputs/leafs (names must match)
 # - generate the same outputs for all possible input combinations 
 xor_diff_input = XOR("b","c")
+print("\n** we are expecting an error print below **")
 assert not node1.logical_eq(xor_diff_input)
