@@ -58,7 +58,7 @@ nand.logical_eq(not_and) # returns True
 ```
 (More in [Tutorial 2](tutorials/tutorial_2.py))
 
-### Supported Verilog Syntax
+## Supported Verilog Syntax
 - All ports/variables must be of single-bit `logic` datatype, arrays (both packed and unpacked are not supported).
 - Monolithic modules without parameters, hierarchy(instantiating modules) is not supported.
 - Local variable declarations
