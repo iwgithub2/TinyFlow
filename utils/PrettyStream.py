@@ -119,8 +119,8 @@ class PrettyStream():
         self.empty_line = True
         return self
     
-    def __lshift__(self, other):
-        return self.put_line(other)
+    def __lshift__(self, *other):
+        return self.put_line(*other)
     
     def __or__(self, other):
         self.cache += self.get_sep() + str(other)
@@ -157,18 +157,6 @@ class PrettyStream():
 
     def set_indent(self, depth):
         self.depth = depth
-        return self
-
-    def __pos__(self):
-        self.depth += 1
-        return self
-    
-    def __neg__(self):
-        self.depth -= 1
-        return self
-    
-    def __xor__(self, other):
-        self.depth += other
         return self
     
     def __enter__(self):

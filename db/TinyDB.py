@@ -14,7 +14,6 @@ class TinyDB:
         self.name = name
         self.inputs = set()
         self.outputs = set()
-        self.cells = {}
         self.vars = {}
 
     def add_var(self, var_name, expr = None):
@@ -74,9 +73,6 @@ class TinyDB:
         """
         self.name = json["name"]
 
-    def export_verilog(self,file):
-        pass
-
     def logical_eq(self, other):
         """
         Compares two libraries for logical equivalence.
@@ -113,13 +109,6 @@ class TinyDB:
             p << ["vars"]
             with p:
                 for k, v in self.vars.items():
-                    # p << [ k, ":" ]
-                    # if isinstance(v, Node):
-                    #     v.pretty(p)
-                    # elif isinstance(v, str):
-                    #     p << [v]
-                    # else:
-                    #     p << [str(v)]
                     p << [ f'{k}:', str(v), ]
         return p.cache
 

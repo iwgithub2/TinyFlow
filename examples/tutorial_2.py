@@ -3,6 +3,9 @@
 #==============================================================================
 
 from db.LogicNodes import AND, INV, OR, XOR
+from utils.PrettyStream import set_verbose_level, ALL
+
+set_verbose_level(ALL)
 
 # This tutorial will show how we can quickly evaluate and compare nodes for testing
 node1 = OR(AND(INV("a"),"b"),AND("a",INV("b")))
