@@ -38,3 +38,11 @@ def graph_db(db:TinyDB):
 def dump_db_graph(db:TinyDB, filename):
     dot = graph_db(db)
     dot.render(filename, view=False)
+    dot.format = 'svg'
+    dot.render(filename, view=False)
+
+def dump_node_graph(node:Node, filename, label=None):
+    dot = graph_node(node,label=label)
+    dot.render(filename, view=False)
+    dot.format = 'svg'
+    dot.render(filename, view=False)

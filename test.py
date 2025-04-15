@@ -1,5 +1,3 @@
-
-from ast import dump
 from db.TinyDB import TinyDB
 from db.TinyLib import TinyLib
 from utils.PrettyStream import *
@@ -19,6 +17,6 @@ assert(db_legal.logical_eq(db))
 
 lib = TinyLib("dbfiles/stdcells.lib")
 db_mapped = tech_mapping_pass(db_legal, lib)
-db_mapped.dump_verilog("FullAdder_mapped.v")
+db_mapped.dump_verilog("generated/FullAdder_mapped.v")
 dump_db_graph(db_mapped,"generated/db_mapped")
 assert(db_legal.logical_eq(db))
