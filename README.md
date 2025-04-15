@@ -25,7 +25,7 @@ The frontend of TinyFlow consists three different class:
 ### Tutorials/Examples
 Checkout code tutorials/examples in [examples](examples)
 
-To run tutorial_1, run `python -m examples.tutorial_1` from the TinyFlow root directory
+To run tutorial 1, run `python -m examples.tutorial_1` from the TinyFlow root directory
 
 ### Build Logic Trees in TinyFlow 
 First, try out building a logic tree in TinyFlow, TinyFlow provides a set of standard logic nodes in `db.LogicNodes`: 
