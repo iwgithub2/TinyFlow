@@ -22,10 +22,14 @@ The frontend of TinyFlow consists three different class:
 - Node (Represents a node in a logic tree)
 - TinyLib (Collection of standard cell informations)
 
-### Tutorials/Examples
-Checkout code tutorials/examples in [examples](examples)
+---
 
-To run tutorial_1, run `python -m examples.tutorial_1` from the TinyFlow root directory
+### Running Tutorials/Examples
+Checkout code tutorials and examples in [examples](examples)
+
+To run tutorial 1, run `python -m examples.tutorial_1` from the TinyFlow root directory
+
+---
 
 ### Build Logic Trees in TinyFlow 
 First, try out building a logic tree in TinyFlow, TinyFlow provides a set of standard logic nodes in `db.LogicNodes`: 
@@ -44,6 +48,8 @@ dump_node_graph(node1, "generated/tut_1/node1", label="Tree Visualization")
 
 (More in [Tutorial 1](examples/tutorial_1.py))
 
+---
+
 ### Evaluating Logic Trees 
 Logic Trees can be evaluated with the `eval()` method:
 ```
@@ -58,6 +64,8 @@ nand.logical_eq(not_and) # returns True
 ```
 (More in [Tutorial 2](examples/tutorial_2.py))
 
+---
+
 ## Supported Verilog Syntax
 - All ports/variables must be of single-bit `logic` datatype, arrays (both packed and unpacked are not supported).
 - Monolithic modules without parameters, hierarchy(instantiating modules) is not supported.
@@ -66,4 +74,4 @@ nand.logical_eq(not_and) # returns True
 - Six operators: `~`, `&`, `~&`, `|`, `~|`, `^`, `~^`
 - Nested Unary/Binary Expressions (without precendence support, must explicitly declare precedence with parenthesis
   - E.g. `a & (b & c)` is supported, but not `a & b & c`, similarly `(~a) | b` is supported but not `~a | b`.
-- Example Supported Verilog: [FullAdder](https://github.com/fangzhonglyu/TinyFlow/blob/fbc21083a1282564b84b1a2b1780d2c8abd4efcf/verilog/FullAdder.sv#L1-L12)
+- Example Supported Verilog: [FullAdder](verilog/FullAdder.sv)
