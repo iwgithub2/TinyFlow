@@ -13,7 +13,7 @@
             },
             "dimen": [1.5,1],
             "cost": 2,
-            "forms":[
+            "patterns":[
                 "NAND(a1,a2)"
             ]
         },
@@ -26,7 +26,7 @@
             },
             "dimen": [1.5,1],
             "cost": 2,
-            "forms":[
+            "patterns":[
                 "NAND(NAND(s,a2),NAND(INV(s),a1))"
             ]
         },
@@ -39,7 +39,7 @@
             },
             "dimen": [3,1],
             "cost":3,
-            "forms":[
+            "patterns":[
                 "INV(NAND(INV(INV(NAND(a1, a2))), INV(b)))"
             ]
         },
@@ -51,7 +51,7 @@
             },
             "dimen": [1.5,1],
             "cost": 3,
-            "forms":[
+            "patterns":[
                 "NAND(NAND(INV(a1),a2),NAND(a1,INV(a2)))"
             ]
         },
@@ -62,7 +62,7 @@
             },
             "dimen": [1,1],
             "cost": 1,
-            "forms":[
+            "patterns":[
                 "INV(a)",
                 "NAND(a,a)"
             ]
@@ -75,7 +75,7 @@
             },
             "cost": 2.5,
             "dimen": [1.5,1],
-            "forms":[
+            "patterns":[
                 "INV(NAND(INV(a1), INV(a2)))"
             ]
         }

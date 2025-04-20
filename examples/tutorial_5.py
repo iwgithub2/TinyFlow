@@ -22,7 +22,7 @@
 #       ...
 #     - "dimen": [number, number]
 #     - "cost": number
-#     - "forms": [str, ...]
+#     - "patterns": [str, ...]
 #   ...
 #
 # An example TinyLib file is provided in dbfiles/stdcells.lib
@@ -63,13 +63,13 @@ assert(nor_logic.logical_eq(nor_cell))
 # - input_pins: list of input pins
 # - output_pin: the output pin
 # - output_func: the output function
-# - tree_forms: list of tree forms to use for tech mapping
+# - patterns: list of patterns to use for tech mapping
 #
 # These attributes are fixed for the class and cannot be changed.
 # You can access these attributes using the class name or the class object.
 p = PrettyStream()
-p << "NOR2D1 has the following tree forms: "
+p << "NOR2D1 has the following patterns: "
 with p:
-    for form in NOR2D1.tree_forms:
-        p << form
+    for pattern in NOR2D1.patterns:
+        p << pattern
 vprint(p.cache)

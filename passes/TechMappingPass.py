@@ -32,9 +32,9 @@ def tech_map(node: Node, lib: TinyLib, top_node=True, out=None):
     best_tree = None
     
     for cell_name, cell in lib.cells.items():
-        for form in cell.tree_forms:
+        for p in cell.patterns:
             cost = lib.cell_costs[cell_name]
-            result = match_form(node, form)
+            result = match_pattern(node, p)
             if result is None:
                 continue
             for port, wire in result.items():
@@ -52,12 +52,12 @@ def tech_map(node: Node, lib: TinyLib, top_node=True, out=None):
     node.optimal_match = best_tree, best_cost
     return best_tree, best_cost
 
-def match_form(node, form, env={}):
+def match_pattern(node, pattern, env={}):
     #vprint(f"matching \n{node.pretty(PrettyStream())}\n with \n{form.pretty(PrettyStream())}Given:{env}")
-    # Check if current node matches the form
-    if node.cell_name != form.cell_name:
+    # Check if current node matches the pattern
+    if node.cell_name != pattern.cell_name:
         return None
-    if len(node.children) != len(form.children):
+    if len(node.children) != len(pattern.children):
         return None
     # try all permutations to match against gate
     for perm in permutations(node.children):
@@ -67,21 +67,21 @@ def match_form(node, form, env={}):
         # Match individual Children
         for i in range(len(perm)):
             c = perm[i] # self's child
-            f = form.children[i] # the form's child
+            f = pattern.children[i] # the patterns's child
             # If child is terminal
             if isinstance(f, str):
-                # break if form's terminal is already matched to something else
+                # break if patterns's terminal is already matched to something else
                 if f in top_env and c != top_env[f]:
                     matching_children = -1
                     break
-                # Match this terminal to form's terminal
+                # Match this terminal to patterns's terminal
                 top_env[f] = c
                 #vprint(f'Matched {f} with {c}',v=PASSED)
                 matching_children += 1   
             # If child is node
             elif isinstance(c, Node):
                 # try to match the node
-                child_env = match_form(c,f,top_env)
+                child_env = match_pattern(c,f,top_env)
                 if child_env is None: # break if there is no match
                     break 
                 else: # otherwise update the env

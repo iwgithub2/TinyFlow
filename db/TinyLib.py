@@ -3,11 +3,11 @@ from db.LogicNodes import *
 from utils.PrettyStream import *
 import json
 
-def NodeFactory(cell_name, pins, forms=[]):
+def NodeFactory(cell_name, pins, patterns=[]):
     inputs_pins = []
     output_func = None
     output_pin = None
-    tree_forms = []
+    patterns_evaled = []
     for pin_name, pin_value in pins.items():
         if pin_value == 'input':
             inputs_pins.append(pin_name)
@@ -15,14 +15,14 @@ def NodeFactory(cell_name, pins, forms=[]):
         if pin_value != 'input':
             output_pin = pin_name
             output_func = eval(f"lambda {','.join(inputs_pins)}:{pin_value}")
-    for form in forms:
-        tree_forms.append(eval(form,None,{i:i for i in inputs_pins}))
+    for p in patterns:
+        patterns_evaled.append(eval(p,None,{i:i for i in inputs_pins}))
 
     def __init__(self, *inputs, out=None):
         super(self.__class__, self).__init__(inputs,out=out)
                 
     newclass = type(cell_name, (Node,),{"__init__": __init__, 
-                                        "tree_forms": tree_forms, 
+                                        "patterns": patterns_evaled, 
                                         "cell_name": cell_name,
                                         "input_pins":inputs_pins,
                                         "output_pin": output_pin,
@@ -44,7 +44,7 @@ class TinyLib:
                 self.cells = {}
                 self.libname = data["library"]["name"]
                 for key, value in data["cells"].items():
-                    cell = NodeFactory(key, value["pins"], value["forms"])
+                    cell = NodeFactory(key, value["pins"], value["patterns"])
                     self.cells[key] = cell
                     self.cell_costs[key] = value["cost"]
                     globals()[key] = cell

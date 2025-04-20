@@ -29,7 +29,7 @@ class Node():
     input_pins = []
     output_func = lambda *_ : False
     output_pin = None
-    tree_forms = []
+    patterns = []
 
     def new_node():
         """
@@ -41,7 +41,7 @@ class Node():
     
     @classmethod
     def cell_info(cls):
-        return f"{cls.cell_name}({','.join(cls.input_pins)})->{cls.output_pin} [{len(cls.tree_forms)} form]"
+        return f"{cls.cell_name}({','.join(cls.input_pins)})->{cls.output_pin} [{len(cls.patterns)} patterns]"
     
     def __init__(self, children, out=None):
         self.state = Node.State.PRE_SYNTH
