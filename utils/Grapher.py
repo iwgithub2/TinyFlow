@@ -1,4 +1,5 @@
 from encodings.idna import dots
+from re import L
 from graphviz import Digraph
 from db.Node import Node
 from db.TinyDB import TinyDB
@@ -29,9 +30,10 @@ def graph_node(node:Node, dot=None, label=None, prefix="", graphed=set()):
             dot.edge(node.output_signal, prefix+child)
     return dot
 
-def graph_db(db:TinyDB):
+def graph_db(db:TinyDB, label=None):
     cluster = Digraph(name=db.name)
-    cluster.attr(label=db.name, labelloc="tl", fontsize="15")
+    if label is not False:
+        cluster.attr(label=db.name if label is None else label, labelloc="tl", fontsize="15")
     for pin, node in db.vars.items():
         if isinstance(node,Node):
             c = "darkslategray1" if pin in db.outputs else "khaki1"
@@ -40,8 +42,8 @@ def graph_db(db:TinyDB):
             graph_node(node, cluster,prefix=pin)
     return cluster
 
-def dump_db_graph(db:TinyDB, filename):
-    dot = graph_db(db)
+def dump_db_graph(db:TinyDB, filename, label=None):
+    dot = graph_db(db,label)
     dot.render(filename, view=False)
     dot.format = 'svg'
     dot.render(filename, view=False)
