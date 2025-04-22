@@ -4,9 +4,13 @@
 
 from db.TinyDB import TinyDB  # Database representing a macro/module
 from db.LogicNodes import AND, OR, XOR
-from utils.PrettyStream import vprint_pretty, vprint, set_verbose_level, DEBUG, INFO
-
+from utils.PrettyStream import vprint_pretty, vprint, set_verbose_level, DEBUG, INFO, vprint_title
 set_verbose_level(DEBUG)
+
+#================================================================================
+# Part A
+#================================================================================
+vprint_title("Part A")
 
 # Now that we know all about Logic Trees and Nodes, we can combine them into a design
 full_adder = TinyDB("FullAdder") # Create an empty database representing a module
@@ -23,6 +27,11 @@ full_adder.add_input("cin")
 
 vprint("Printing the db with inputs added:")
 vprint_pretty(full_adder,v=DEBUG)
+
+#================================================================================
+# Part B
+#================================================================================
+vprint_title("Part B")
 
 # We can add outputs to the db along with their corresponding logic trees
 sum_node = XOR("a",XOR("b","cin"))
@@ -41,6 +50,11 @@ vprint_pretty(full_adder,v=DEBUG)
 vprint("Printing the db short hand:")
 vprint(str(full_adder),v=DEBUG)
 
+#================================================================================
+# Part C
+#================================================================================
+vprint_title("Part C")
+
 # We want to make sure that this database correctly represents a full adder:
 all_patterns = full_adder.get_all_input_pattern()
 vprint("all_patterns for db:")
@@ -55,6 +69,11 @@ full_adder_alt = full_adder.make_empty_copy()
 # db_alt preserves inputs and outputs, but not the trees
 vprint("Printing the empty copy of the db:")
 
+#================================================================================
+# Part D
+#================================================================================
+vprint_title("Part D")
+
 # Suppose we want to instead compute sum in two steps, where:
 # sub_sum = a xor b
 # sum = sub_sum xor cin
@@ -67,6 +86,11 @@ vprint_pretty(full_adder_alt,v=DEBUG)
 full_adder_alt.vars["sum"] = XOR("sub_sum","cin")
 vprint("Printing the db with sum updated:")
 vprint_pretty(full_adder_alt,v=DEBUG)
+
+#================================================================================
+# Part E
+#================================================================================
+vprint_title("Part E")
 
 # we also need to add the tree for cout
 # We don't want different database to have same trees, so we can copy the tree for cout_node

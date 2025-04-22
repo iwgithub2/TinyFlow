@@ -30,17 +30,29 @@
 # !! Note that TinyLib currently only supports single-output cells. !!
 # So only one pin can have a lambda expression, and it must be the output pin.
 
+from utils.PrettyStream import set_verbose_level, vprint_pretty, INFO, vprint, vprint_title
+set_verbose_level(INFO)
+
 # You can load a TinyLib file using the TinyLib class
 from db.TinyLib import TinyLib
-from utils.PrettyStream import set_verbose_level, vprint_pretty, INFO, vprint
+
+#================================================================================
+# Part A
+#================================================================================
+vprint_title("Part A")
 
 lib = TinyLib("dbfiles/stdcells.lib")
-set_verbose_level(INFO)
+
 vprint("Loaded library:", v=INFO)
 vprint_pretty(lib)
 
 # TinyLib's constructor will automatically generated subclasses for each cell
 # and load them into the global namespace.
+
+#================================================================================
+# Part B
+#================================================================================
+vprint_title("Part B")
 
 # Let's try to spawn an instance of a generated class:
 try:
@@ -57,6 +69,11 @@ from db.TinyLib import *
 nor_cell = NOR2D1("a","b")
 nor_logic = NOR("a","b")
 assert(nor_logic.logical_eq(nor_cell))
+
+#================================================================================
+# Part C
+#================================================================================
+vprint_title("Part C")
 
 # The TinyLib constructor also sets several static attributes for generated classes, including:
 # - cell_name: the name of the stdcell

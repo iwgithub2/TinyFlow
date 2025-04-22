@@ -3,9 +3,14 @@
 #==============================================================================
 
 from db.LogicNodes import AND, INV, OR, XOR
-from utils.PrettyStream import set_verbose_level, ALL
+from utils.PrettyStream import set_verbose_level, ALL,vprint_title
 
 set_verbose_level(ALL)
+
+#================================================================================
+# Part A
+#================================================================================
+vprint_title("Part A")
 
 # This tutorial will show how we can quickly evaluate and compare nodes for testing
 node1 = OR(AND(INV("a"),"b"),AND("a",INV("b")))
@@ -42,6 +47,11 @@ except ValueError:
     pass
 # Notice that we receive both an error message from terminal and a ValueError exception
 
+#================================================================================
+# Part B
+#================================================================================
+vprint_title("Part B")
+
 # Now you probably noticed that node1 is actually just an XOR between a and b
 # Lets verify this by comparing its outputs to an XOR node:
 xor_node = XOR("a","b")
@@ -59,9 +69,19 @@ for env in all_patterns:
     assert node1.eval(env) == xor_node.eval(env)
     print("node1 and xor_node outputs match for input pattern", env)
 
+#================================================================================
+# Part C
+#================================================================================
+vprint_title("Part C")
+
 # An even simper way to checking this is to use the logical_eq() method
 # logical_eq() checks for logical equivalence between a pair of trees. 
 assert node1.logical_eq(xor_node)
+
+#================================================================================
+# Part D
+#================================================================================
+vprint_title("Part D")
 
 # To be logically equivalent, the trees must 
 # - have the same set of inputs/leafs (names must match)

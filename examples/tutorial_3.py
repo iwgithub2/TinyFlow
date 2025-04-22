@@ -6,10 +6,15 @@ from db.LogicNodes import AND, INV, OR, XOR
 
 # The PrettyStream module provides both logging and pretty_printing for TinyFlow
 from utils import PrettyStream
-from utils.PrettyStream import set_verbose_level, vprint, vprint_pretty, PrettyStream
+from utils.PrettyStream import set_verbose_level, vprint, vprint_pretty, PrettyStream, vprint_title
 
 # different verbosity levels, in order of increasing verbosity
 from utils.PrettyStream import ERROR, QUIET, WARN, FAILED, PASSED, INFO, VERBOSE, DEBUG, ALL 
+
+#================================================================================
+# Part A
+#================================================================================
+vprint_title("Part A",v=QUIET)
 
 node1 = OR(AND(INV("a"),"b"),AND("a",INV("b")))
 node2 = XOR("a","b")
@@ -25,6 +30,11 @@ print("\nComparing nodes with DEBUG verbosity level:")
 set_verbose_level(DEBUG)
 assert(node1.logical_eq(node2)) 
 # Now for a logical_eq check, you can see what is being compared
+
+#================================================================================
+# Part B
+#================================================================================
+vprint_title("Part B",v=QUIET)
 
 # You can use vprint to print information at different verbosity levels
 vprint("This is an error message", v=ERROR)
@@ -42,6 +52,11 @@ vprint("Some information 1\nSome information 2", v=INFO)
 # We also provide a shortcut for logging pretty printed nodes
 vprint_pretty(node1, v=INFO)
 
+
+#================================================================================
+# Part C
+#================================================================================
+vprint_title("Part C",v=QUIET)
 
 # PrettyStream recreates many of the C++ Stream functionality in Python
 p = PrettyStream()
