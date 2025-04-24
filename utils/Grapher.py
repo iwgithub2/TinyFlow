@@ -4,7 +4,9 @@ from graphviz import Digraph
 from db.Node import Node
 from db.TinyDB import TinyDB
 
-def graph_node(node:Node, dot=None, label=None, prefix="", graphed=set()):
+def graph_node(node:Node, dot=None, label=None, prefix="", graphed=None):
+    if graphed is None:
+        graphed = set()
     if node in graphed:
         return dot
     

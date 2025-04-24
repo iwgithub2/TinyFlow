@@ -3,30 +3,30 @@ from db.TinyDB import TinyDB
 from db.Node import Node
 from db.LogicNodes import *
 
-def logic_legalize_pass(db: TinyDB, duplicate=True):
+def nand_inv_pass(db: TinyDB, duplicate=False):
     """
-    Logic legalization pass for the TinyDB
+    NAND INV conversion pass for the TinyDB
     """
-    vprint_title("Logic Legalization Pass", v=INFO)
+    vprint_title("NAND INV Conversion Pass", v=INFO)
     original_db = db
     db = original_db.make_empty_copy()
     new_vars={}
     for name, tree in original_db.vars.items():
-        vprint(f"Legalizing pin {name}", v=VERBOSE)
+        vprint(f"Converting pin {name}", v=VERBOSE)
         if isinstance(tree, Node):
-            tree = legalize_node(tree,new_vars, duplicate=duplicate, out=name)
+            tree = convert_node(tree,new_vars, duplicate=duplicate, out=name)
         db.vars[name] = tree
     db.vars |= new_vars
-    vprint("Legalized:", db,v=INFO)
+    vprint("Converted:", db,v=INFO)
     vprint_pretty(db,v=VERBOSE)
     return db
 
-def legalize_node(node: Node, new_vars={}, duplicate=True, out=None):
+def convert_node(node: Node, new_vars={}, duplicate=True, out=None):
     """
-    Logic legalization pass for a single node
+    NAND INV conversion pass for a single node
     """
-    vprint(f"Legalizing node {node}", v=DEBUG)
-    children = [ legalize_node(c,new_vars,duplicate,out=c.output_signal) if isinstance(c, Node) else c for c in node.children ]
+    vprint(f"Converting node {node}", v=DEBUG)
+    children = [ convert_node(c,new_vars,duplicate,out=c.output_signal) if isinstance(c, Node) else c for c in node.children ]
     a = children[0]
     b = children[1] if len(children) > 1 else None
     match node:
