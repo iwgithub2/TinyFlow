@@ -40,6 +40,7 @@
             "dimen": [3,1],
             "cost":3,
             "patterns":[
+                "INV(NAND(NAND(a1, a2), INV(b)))",
                 "INV(NAND(INV(INV(NAND(a1, a2))), INV(b)))"
             ]
         },

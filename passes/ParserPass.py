@@ -3,10 +3,14 @@ from utils.PrettyStream import *
 from db.TinyDB import TinyDB
 from db.LogicNodes import *
 
+sv = True
+
 def parser_pass(input_file):
     """
     Parse the input file and return the database
     """
+    global sv
+    sv = input_file.endswith(".sv")
     vprint_title("Parser Pass")
     ast = parse(input_file)
     db = extract_db(ast)
@@ -14,7 +18,8 @@ def parser_pass(input_file):
     vprint_pretty(db,v=VERBOSE)
     return db
 
-def parse(filename, grammar="grammars/minisv.lark"):
+def parse(filename):
+    grammar = "grammars/tinysv.lark" if sv else "grammars/tinyv.lark"
     with open(filename) as f:
         text = f.read()
     with open(grammar) as f:
@@ -38,20 +43,31 @@ def visit(ast_node, db):
                 for c in ast_node.children:
                     visit(c, db)
             case "port_decl":
-                
-                match ast_node.children:
-                    case [Token("DIR","input"), Token("ID",id)]:
-                        db.add_input(id)
-                        vprint(f"Input port: {id}", v=VERBOSE)
-                    case [Token("DIR","output"), Token("ID",id)]:  
-                        db.add_output(id)
-                        vprint(f"Output port: {id}", v=VERBOSE)
+                if sv:
+                    match ast_node.children:
+                        case [Token("DIR","input"), Token("ID",id)]:
+                            db.add_input(id)
+                            vprint(f"Input port: {id}", v=VERBOSE)
+                        case [Token("DIR","output"), Token("ID",id)]:  
+                            db.add_output(id)
+                            vprint(f"Output port: {id}", v=VERBOSE)
             case "assignment":
                 match ast_node.children:
                     case [Token("ID",id), expr]:
                         db.add_var(id, visit_expr(expr,out=id))
             case "decl":
-                db.add_var(ast_node.children[0].value)
+                if sv:
+                    db.add_var(ast_node.children[0].value)
+                else:
+                    match ast_node.children:
+                        case [Token("TYPE","input"), Token("ID",id)]:
+                            db.add_input(id)
+                            vprint(f"Input port: {id}", v=VERBOSE)
+                        case [Token("TYPE","output"), Token("ID",id)]:  
+                            db.add_output(id)
+                            vprint(f"Output port: {id}", v=VERBOSE)
+                        case [Token("TYPE","wire"), Token("ID",id)]:
+                            db.add_var(id)
             case _:
                 err_msg(f"Unknown AST node type: {ast_node.data}")
                 vprint(ast_node, v=DEBUG)

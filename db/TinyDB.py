@@ -22,7 +22,7 @@ class TinyDB:
         
         Args:
             var_name (str): The name of the variable
-            expr (str): The expression tree of the variable
+            expr (Node): The expression tree of the variable
         """
 
         if(var_name in self.vars and self.vars[var_name] is None):
