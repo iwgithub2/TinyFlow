@@ -1,5 +1,5 @@
 # TinyFlow
-A tiny EDA toolflow built-in python for RTL-GDS compilation, currently supporting a small subset of SystemVerilog.
+A tiny EDA toolflow built in python for RTL-GDS compilation, currently supporting a small subset of SystemVerilog.
 TinyFlow includes a TinyDB, TinyLib, and 3 frontend passes. Development is in progress to implement the backend passes with lambda-rule based standard cells.
 
 ## Installing TinyFlow
