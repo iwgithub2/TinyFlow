@@ -3,6 +3,7 @@ from numbers import Number
 from utils.PrettyStream import *
 from enum import Enum
 from copy import copy
+import uuid
 
 class Node():
     """
@@ -53,6 +54,22 @@ class Node():
         self.output_signal = Node.new_node() if out is None else out
         self.optimal_match = None
         self.cuts = []
+
+        self.node_id = str(uuid.uuid4())
+        self.placement = None
+        self.placement_attributes = {}
+    
+    def set_placement(self, x, y):
+        self.placement = (x, y)
+        if self.state.value < Node.State.POST_PLACE.value:
+            self.state = Node.State.POST_PLACE
+
+    def get_all_nodes_with_ids(self):
+        nodes = {}
+        for node in self:
+            if isinstance(node, Node):
+                nodes[node.node_id] = node
+        return nodes
 
     def in_order_iterator(self):
         for c in self.children:

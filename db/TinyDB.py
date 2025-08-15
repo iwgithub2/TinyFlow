@@ -16,6 +16,28 @@ class TinyDB:
         self.outputs = set()
         self.vars = {}
 
+        self.node_registry = {}
+    
+    def _register_node(self, node):
+        """
+        Register a node in teh node registry
+        """
+        if isinstance(node, Node):
+            self.node_registry[node.node_id] = node
+            for child in node.children:
+                if isinstance(child, Node):
+                    self._register_node(child)
+    
+    def _unregister_node(self, node):
+        """
+        Unregister a node and its children from the node registry
+        """
+        if isinstance(node, Node) and node.node_id in self.node_registry:
+            del self.node_registry[node.node_id]
+            for child in node.children:
+                if isinstance(child, Node):
+                    self._unregister_node(child)
+
     def add_var(self, var_name, expr = None):
         """
         Add a variable to the database
@@ -27,6 +49,7 @@ class TinyDB:
 
         if(var_name in self.vars and self.vars[var_name] is None):
             self.vars[var_name] = expr
+            self._register_node(expr)
             vprint(f"Updating variable {var_name} in database", v=VERBOSE)
         elif (not var_name in self.vars):
             self.vars[var_name] = expr
@@ -50,6 +73,133 @@ class TinyDB:
             raise ValueError(f"Output {var_name} already exists in module {self.name}")
         self.outputs.add(var_name)
         self.add_var(var_name, expr)
+
+    def get_node_by_id(self, node_id):
+        """
+        Get a node by its unique ID.
+        
+        Args:
+            node_id (str): The unique ID of the node
+            
+        Returns:
+            Node: The node object or None if not found
+        """
+        return self.node_registry.get(node_id)
+
+    def get_all_nodes(self):
+        """
+        Get all nodes in the database.
+        
+        Returns:
+            dict: Mapping of node_id to Node object
+        """
+        return self.node_registry.copy()
+
+    def get_placed_nodes(self):
+        """
+        Get all nodes that have placement information.
+        
+        Returns:
+            dict: Mapping of node_id to Node object for placed nodes
+        """
+        return {node_id: node for node_id, node in self.node_registry.items() 
+                if node.is_placed()}
+
+    def get_unplaced_nodes(self):
+        """
+        Get all nodes that don't have placement information.
+        
+        Returns:
+            dict: Mapping of node_id to Node object for unplaced nodes
+        """
+        return {node_id: node for node_id, node in self.node_registry.items() 
+                if not node.is_placed()}
+
+    def set_node_placement(self, node_id, x, y, **kwargs):
+        """
+        Set placement for a node by its ID.
+        
+        Args:
+            node_id (str): The unique ID of the node
+            x (float): X coordinate
+            y (float): Y coordinate
+            **kwargs: Additional placement attributes
+            
+        Returns:
+            bool: True if placement was set successfully, False if node not found
+        """
+        node = self.get_node_by_id(node_id)
+        if node:
+            node.set_placement(x, y, **kwargs)
+            return True
+        return False
+
+    def apply_placement_results(self, placement_dict):
+        """
+        Apply placement results from a placement algorithm.
+        
+        Args:
+            placement_dict (dict): Dictionary mapping node_id to placement info
+                                 Can be {node_id: (x, y)} or {node_id: {'x': x, 'y': y, ...}}
+        
+        Returns:
+            dict: Summary of placement results
+        """
+        results = {
+            'placed': 0,
+            'failed': 0,
+            'not_found': []
+        }
+        
+        for node_id, placement_info in placement_dict.items():
+            node = self.get_node_by_id(node_id)
+            if node is None:
+                results['not_found'].append(node_id)
+                results['failed'] += 1
+                continue
+                
+            try:
+                if isinstance(placement_info, tuple) and len(placement_info) >= 2:
+                    # Simple (x, y) tuple
+                    node.set_placement(placement_info[0], placement_info[1])
+                elif isinstance(placement_info, dict):
+                    # Dictionary with coordinates and optional attributes
+                    x = placement_info.get('x', placement_info.get('X', 0))
+                    y = placement_info.get('y', placement_info.get('Y', 0))
+                    # Extract additional attributes
+                    attrs = {k: v for k, v in placement_info.items() 
+                            if k.lower() not in ['x', 'y']}
+                    node.set_placement(x, y, **attrs)
+                else:
+                    results['failed'] += 1
+                    continue
+                    
+                results['placed'] += 1
+                
+            except Exception as e:
+                vprint(f"Failed to place node {node_id}: {e}", v=VERBOSE)
+                results['failed'] += 1
+        
+        vprint(f"Placement results: {results['placed']} placed, {results['failed']} failed", v=INFO)
+        return results
+
+    def export_placement(self):
+        """
+        Export placement information for all placed nodes.
+        
+        Returns:
+            dict: Dictionary mapping node_id to placement information
+        """
+        placement_export = {}
+        for node_id, node in self.get_placed_nodes().items():
+            placement_export[node_id] = {
+                'x': node.placement[0],
+                'y': node.placement[1],
+                'cell_name': node.cell_name,
+                'output_signal': node.output_signal,
+                **node.placement_attributes
+            }
+        return placement_export
 
     def make_empty_copy(self):
         new_db = TinyDB(self.name)

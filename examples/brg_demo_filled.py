@@ -5,6 +5,7 @@ from passes.ParserPass import parser_pass
 from passes.NandInvPass import nand_inv_pass
 from passes.TechMappingPass import tech_mapping_pass
 from utils.Grapher import dump_db_graph, dump_node_graph
+from placement.placer import simple_placement
 
 from db.LogicNodes import INV, AND, NAND, OR, NOR, XOR, XNOR
 
@@ -39,7 +40,7 @@ for pattern, output in sum_tt:
 # Pretty print the tree and then dump the graph to a file
 # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''\/
 
-print(sum_tree.pretty())
+# print(sum_tree.pretty())
 dump_node_graph(sum_tree, "generated/brg_demo/sum_tree")
 
 # ''' DEMO TASK 1.4 '''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -84,7 +85,7 @@ full_adder.add_output('sum', sum_tree)
 # ''' DEMO TASK 2.3 '''''''''''''''''''''''''''''''''''''''''''''''''''''
 # Pretty print the TinyDB and then dump the graph to a file
 # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''\/
-print(full_adder.pretty())
+# print(full_adder.pretty())
 dump_db_graph(full_adder, "generated/brg_demo/full_adder")
 
 #==============================================================================
@@ -117,3 +118,6 @@ assert(db_nandinv.logical_eq(db))
 # Compare the TinyDB from Verilog to the one we built manually
 # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''\/
 assert(db_mapped.logical_eq(full_adder))
+
+# Call the placer using the technology mapped version of the netlist
+simple_placement(db_mapped, lib)
