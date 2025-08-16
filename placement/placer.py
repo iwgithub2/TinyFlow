@@ -11,137 +11,71 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
 # Define
-def simple_placement(db_mapped: TinyDB, lib : TinyLib):
-    netlist = db_mapped.get_netlist()
-    print("Db:", db_mapped.vars)
-    # print("Netlist:", netlist)
+def simple_placement(db: TinyDB, lib : TinyLib):
+    netlist = db.get_netlist()
 
     # parse netlist
-    gates_count, connection_list, gates = parse_db_netlist(netlist, lib)
-    print("Gates Count:", gates_count)
-    print("Connections:", connection_list)
-    print("Gates:", gates)
+    connection_list = parse_db_netlist(netlist, lib)
 
-    # grid_size = 10 # 10x10 grid
+    grid_size = 10 # 10x10 grid
     
-    # finalplacement, cost = simulated_annealing(gates, connection_list, grid_size, use_gui=False)
-
-    # print("Final placement:", finalplacement)
-    # print("Final cost:", cost)
+    finalplacement, cost = simulated_annealing(db.get_all_nodes().keys(), connection_list, grid_size, use_gui=False)
 
     # visualize_final_placement(finalplacement, connection_list, grid_size, cost)
-    # update_nodes_with_placement(db_mapped, finalplacement)
+    
+    # Update Position
+    for node in finalplacement.keys():
+        x, y = finalplacement[node]
+        db.set_node_placement(node, x, y)
+    
+    # print(len(db.get_placed_nodes().keys()))
 
 def parse_db_netlist(netlist, lib):
     """
-    Parses a netlist to extract a list of cells
-    and an array containing pairs which are connections
-    E.g. 
-    Cells: ['A', 'B', 'C']
-    Nets: [('A', 'B'), ('B', 'C')] 
-
-    This would demonstrate cells A B and C, with B connected to A and C
-    """
-
-    wire_to_gate_map = {}
-    gates = {}
-    gate_counter = {}
-
-    for gate_info in netlist:
-        gate_type, connections = gate_info
-        
-        if gate_type not in gate_counter:
-            gate_counter[gate_type] = 0
-        
-        instance_name = f"{gate_type}_{gate_counter[gate_type]}"
-        gate_counter[gate_type] += 1
-        gates[instance_name] = {'type': gate_type}
-
-        # Get output pin name
-        output_pin = lib.cells[gate_type].output_pin
-
-        for port, wire in connections.items():
-            if wire not in wire_to_gate_map:
-                wire_to_gate_map[wire] = {'output_of': None, 'input_to': []}
-            if port == output_pin:
-                wire_to_gate_map[wire]['output_of'] = instance_name
-            else:
-                wire_to_gate_map[wire]['input_to'].append(instance_name)
-    
-    connections_list = []
-    for wire, connected_gates in wire_to_gate_map.items():
-        source_gate = connected_gates.get('output_of')
-        if source_gate:
-            for destination_gate in connected_gates.get('input_to', []):
-                connections_list.append((source_gate, destination_gate))
-
-    
-    return gate_counter, connections_list, list(gates.keys())
-
-def update_nodes_with_placement(db, final_placement):
-    """
-    Updates Node objects in a TinyDB with their final placement and size info.
+    Parses a netlist to create a list of connections (nets) between gates.
+    Each connection is a tuple of (source_node_id, destination_node_id).
 
     Args:
-        db (TinyDB): The database containing the original Node objects.
-        final_placement (dict): The output from the annealer. 
-                                Maps {output_wire_name: (x, y)}.
-        final_cell_sizes (dict): The final sizes of the cells.
-                                Maps {output_wire_name: (width, height)}.
+        netlist (list): A list of tuples, where each tuple is
+                        (gate_type, node_id, connections_dict).
+        lib (TinyLib): The technology library, used to find output pin names.
+
+    Returns:
+        list: A list of tuples representing the connections (nets)
+              between gate IDs, e.g., [(source_id, dest_id)].
     """
-    print("\n--- Updating TinyDB Nodes with Placement Data ---")
+    wire_to_gate_map = {}
+
+    # 1. First pass: Build a map of each wire to its driving gate (output_of)
+    #    and its fan-out gates (input_to).
+    for gate_type, connections, node_id in netlist:
+        try:
+            output_pin = lib.cells[gate_type].output_pin
+        except KeyError:
+            # This handles cases where a cell in the netlist isn't in the library
+            raise ValueError(f"Gate type '{gate_type}' (ID: {node_id}) not found in the library.")
+
+        for port, wire in connections.items():
+            # Initialize the wire entry if it's the first time we see it
+            if wire not in wire_to_gate_map:
+                wire_to_gate_map[wire] = {'output_of': None, 'input_to': []}
+            
+            if port == output_pin:
+                wire_to_gate_map[wire]['output_of'] = node_id
+            else:
+                wire_to_gate_map[wire]['input_to'].append(node_id)
+
+    # 2. Second pass: Use the map to create the list of (source, destination) pairs.
+    connections_list = []
+    for wire, connected_gates in wire_to_gate_map.items():
+        source_id = connected_gates.get('output_of')
+        
+        # A valid net must have a source gate.
+        if source_id:
+            for destination_id in connected_gates.get('input_to', []):
+                connections_list.append((source_id, destination_id))
     
-    updated_nodes_set = set()
-
-    def _recursive_update(name, node):
-        """
-        An inner helper function to perform the depth-first update.
-        """
-        if node in updated_nodes_set:
-            return 0
-        
-        updated_nodes_set.add(node)
-        print("Node: ", name, " is node type: ", node)
-        # The unique name for a placed cell is its output signal wire name.
-        # This is the key that links the logical Node to the physical cell.
-        instance_name = node.output_signal
-        
-        nodes_updated_count = 0
-        
-        # --- Action: Update the current node ---
-        if instance_name in final_placement:
-            # Get the placement and size results for this node
-            x_coord, y_coord = final_placement[instance_name]
-            
-            # Update the node object's physical attributes
-            node.x = x_coord
-            node.y = y_coord
-            
-            # CRITICAL: Update the node's state to reflect the design flow stage
-            node.state = Node.State.POST_PLACE
-            
-            nodes_updated_count = 1 # We successfully updated one node
-            # print(f"  -> Updated node for wire '{instance_name}': Pos=({x_coord},{y_coord}), State={node.state.name}")
-        else:
-            # This can happen if a node was optimized away during a previous step
-            # or is part of an unmapped logical tree.
-            # print(f"  -> Warning: Node for wire '{instance_name}' not found in placement results. Skipping.")
-            pass
-
-        # --- Recursive Step: Traverse to children ---
-        for child in node.children:
-            if isinstance(child, Node):
-                nodes_updated_count += _recursive_update(child.cell_name, child)
-                
-        return nodes_updated_count
-
-    # --- Main Logic: Start the recursion from all roots in the database ---
-    total_updated = 0
-    for var_name, root_node in db.vars.items():
-        if isinstance(root_node, Node):
-            total_updated += _recursive_update(root_node.cell_name, root_node)
-            
-    print(f"\nSuccessfully updated {total_updated} nodes to the POST_PLACE state.")
+    return connections_list
 
 def hpwl(placement, nets):
     total_cost = 0
