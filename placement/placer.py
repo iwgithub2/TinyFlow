@@ -9,6 +9,7 @@ from db.LogicNodes import INV, AND, NAND, OR, NOR, XOR, XNOR
 from db.Node import Node
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
+import random
 
 # Define
 def simple_placement(db: TinyDB, lib : TinyLib):
@@ -17,7 +18,14 @@ def simple_placement(db: TinyDB, lib : TinyLib):
     # parse netlist
     connection_list = parse_db_netlist(netlist, lib)
 
+    # Grid size should be an even number
     grid_size = 10 # 10x10 grid
+    
+    # Place IO pads
+    io_placement = place_io(db.get_inputs(), db.get_outputs(), grid_size)
+    for io in io_placement:
+        x, y = io_placement[io]
+        db.set_port_placement(io, x, y)
     
     finalplacement, cost = simulated_annealing(db.get_all_nodes().keys(), connection_list, grid_size, use_gui=False)
 
@@ -77,6 +85,46 @@ def parse_db_netlist(netlist, lib):
     
     return connections_list
 
+def place_io(input_pins, output_pins, grid_size):
+    """
+    Simple IO pin placement. 
+    This version will place all input_pins randomly in order on a line on the left side
+    and place all output_pins randomly in order on a line on the right side
+
+    input_pins: set()
+    output_pins: set()
+    grid_size: even number
+
+    Returns a dictonary of the coordinates of each pin
+    """
+
+    if grid_size <= 0:
+        raise ValueError("Grid size needs to be greater than 0")
+    
+    half_grid = round(grid_size / 2)
+    x_left = -half_grid - 1
+    x_right = half_grid + 1
+
+    input_pins = list(input_pins)
+    output_pins = list(output_pins)
+    
+    random.shuffle(input_pins)
+    random.shuffle(output_pins)
+
+    io_placement = {}
+
+    top_l = math.floor(len(input_pins) / 2)
+
+    for i, pin in enumerate(input_pins):
+        io_placement[pin] = (x_left, top_l - i)
+    
+    top_r = math.floor(len(output_pins) / 2)
+
+    for i, pin in enumerate(output_pins):
+        io_placement[pin] = (x_right, top_r - i)
+
+    return io_placement
+     
 def hpwl(placement, nets):
     total_cost = 0
     for net in nets:

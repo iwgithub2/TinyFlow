@@ -164,8 +164,8 @@ def tech_mapping_pass(db: TinyDB, lib: TinyLib, visualize=False):
         vprint(f"Mapping {var}...", v=VERBOSE)
         t, _ = tech_map(node, lib, out=var)
         t.state = Node.State.POST_SYNTH
-        db.vars[var] = t
-
+        db.add_var(var, t)
+        
     vprint("Mapped", db, v=INFO)
     vprint_pretty(db, v=VERBOSE)
 

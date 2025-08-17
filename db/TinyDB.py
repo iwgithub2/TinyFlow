@@ -1,6 +1,7 @@
 from utils.PrettyStream import FAILED, PASSED, PrettyStream, err_msg, vprint, QUIET, INFO, VERBOSE, DEBUG, ALL
 from db.Node import *
 from db.LogicNodes import *
+from db.IOPort import *
 
 class TinyDB:
     """
@@ -15,6 +16,7 @@ class TinyDB:
         self.inputs = set()
         self.outputs = set()
         self.vars = {}
+        self.ports = {}
 
         self.node_registry = {}
     
@@ -47,14 +49,16 @@ class TinyDB:
             expr (Node): The expression tree of the variable
         """
 
-        if(var_name in self.vars and self.vars[var_name] is None):
-            self.vars[var_name] = expr
-            self._register_node(expr)
-            vprint(f"Updating variable {var_name} in database", v=VERBOSE)
-        elif (not var_name in self.vars):
-            self.vars[var_name] = expr
-        else:
+        if var_name in self.vars and self.vars.get(var_name) is not None:
             raise ValueError(f"Duplicate definition of variable {var_name} in database {self.name}")
+        # Check if we are updating a placeholder (like an output defined before its logic).
+        is_update = var_name in self.vars and self.vars[var_name] is None
+        # Assign the expression to the variable.
+        self.vars[var_name] = expr
+        if isinstance(expr, Node):
+            self._register_node(expr)
+        if is_update:
+            vprint(f"Updating variable {var_name} in database", v=VERBOSE)
         
     def add_input(self, var_name, expr = None):
         """
@@ -65,6 +69,9 @@ class TinyDB:
         self.inputs.add(var_name)
         self.add_var(var_name, expr)
 
+        port = IOPort(var_name, direction=IOPort.Direction.INPUT)
+        self.ports[var_name] = port
+
     def add_output(self, var_name, expr = None):
         """
         Add a variable to the database and register is as an output
@@ -73,6 +80,9 @@ class TinyDB:
             raise ValueError(f"Output {var_name} already exists in module {self.name}")
         self.outputs.add(var_name)
         self.add_var(var_name, expr)
+
+        port = IOPort(var_name, direction=IOPort.Direction.OUTPUT)
+        self.ports[var_name] = port
 
     def get_node_by_id(self, node_id):
         """
@@ -103,7 +113,7 @@ class TinyDB:
             dict: Mapping of node_id to Node object for placed nodes
         """
         return {node_id: node for node_id, node in self.node_registry.items() 
-                if node.is_placed()}
+                if node.placement}
 
     def get_unplaced_nodes(self):
         """
@@ -113,7 +123,7 @@ class TinyDB:
             dict: Mapping of node_id to Node object for unplaced nodes
         """
         return {node_id: node for node_id, node in self.node_registry.items() 
-                if not node.is_placed()}
+                if not node.placement}
 
     def set_node_placement(self, node_id, x, y, **kwargs):
         """
@@ -133,73 +143,21 @@ class TinyDB:
             node.set_placement(x, y, **kwargs)
             return True
         return False
-
-    def apply_placement_results(self, placement_dict):
+    
+    def set_port_placement(self, port_name, x, y, **kwargs):
         """
-        Apply placement results from a placement algorithm.
-        
-        Args:
-            placement_dict (dict): Dictionary mapping node_id to placement info
-                                 Can be {node_id: (x, y)} or {node_id: {'x': x, 'y': y, ...}}
-        
-        Returns:
-            dict: Summary of placement results
+        Set placement for an I/O port by its name.
         """
-        results = {
-            'placed': 0,
-            'failed': 0,
-            'not_found': []
-        }
-        
-        for node_id, placement_info in placement_dict.items():
-            node = self.get_node_by_id(node_id)
-            if node is None:
-                results['not_found'].append(node_id)
-                results['failed'] += 1
-                continue
-                
-            try:
-                if isinstance(placement_info, tuple) and len(placement_info) >= 2:
-                    # Simple (x, y) tuple
-                    node.set_placement(placement_info[0], placement_info[1])
-                elif isinstance(placement_info, dict):
-                    # Dictionary with coordinates and optional attributes
-                    x = placement_info.get('x', placement_info.get('X', 0))
-                    y = placement_info.get('y', placement_info.get('Y', 0))
-                    # Extract additional attributes
-                    attrs = {k: v for k, v in placement_info.items() 
-                            if k.lower() not in ['x', 'y']}
-                    node.set_placement(x, y, **attrs)
-                else:
-                    results['failed'] += 1
-                    continue
-                    
-                results['placed'] += 1
-                
-            except Exception as e:
-                vprint(f"Failed to place node {node_id}: {e}", v=VERBOSE)
-                results['failed'] += 1
-        
-        vprint(f"Placement results: {results['placed']} placed, {results['failed']} failed", v=INFO)
-        return results
-
-    def export_placement(self):
-        """
-        Export placement information for all placed nodes.
-        
-        Returns:
-            dict: Dictionary mapping node_id to placement information
-        """
-        placement_export = {}
-        for node_id, node in self.get_placed_nodes().items():
-            placement_export[node_id] = {
-                'x': node.placement[0],
-                'y': node.placement[1],
-                'cell_name': node.cell_name,
-                'output_signal': node.output_signal,
-                **node.placement_attributes
-            }
-        return placement_export
+        if port_name in self.ports:
+            self.ports[port_name].set_placement(x, y, **kwargs)
+            return True
+        return False
+    
+    def get_inputs(self):
+        return self.inputs.copy()
+    
+    def get_outputs(self):
+        return self.outputs.copy()
 
     def make_empty_copy(self):
         new_db = TinyDB(self.name)
@@ -292,6 +250,11 @@ class TinyDB:
         return f"{self.name}({','.join(self.inputs)})->{','.join(self.outputs)}"
     
     def get_netlist(self):
+        """
+        Returns a netlist which is a list of tuples
+        Each tuple contains a gate, and its connections
+        (gate, dictonary_for_gate, id)
+        """
         netlist = []
         for v, n in self.vars.items():
             if isinstance(n, Node):
@@ -347,7 +310,7 @@ class TinyDB:
                 p << ["logic", f'{i};']
             p << ["// Generated gates"]
             id = 0
-            for name, conn in netlist:
+            for name, conn, node_id in netlist:
                 p << [name, 'g'+str(id), "("]
                 id += 1
                 with p:

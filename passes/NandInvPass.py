@@ -9,14 +9,18 @@ def nand_inv_pass(db: TinyDB, duplicate=False):
     """
     vprint_title("NAND INV Conversion Pass", v=INFO)
     original_db = db
+    # db has inputs and outputs but no insides
     db = original_db.make_empty_copy()
     new_vars={}
     for name, tree in original_db.vars.items():
         vprint(f"Converting pin {name}", v=VERBOSE)
         if isinstance(tree, Node):
             tree = convert_node(tree,new_vars, duplicate=duplicate, out=name)
-        db.vars[name] = tree
-    db.vars |= new_vars
+        db.add_var(name, tree)
+    
+    for name, tree in new_vars.items():
+        db.add_var(name, tree)
+
     vprint("Converted:", db,v=INFO)
     vprint_pretty(db,v=VERBOSE)
     return db

@@ -101,16 +101,12 @@ class Node():
         return inter_set
     
     def copy(self, new_wire=True):
-        new_node = copy(self)
+        new_children = [c.copy(new_wire) if isinstance(c, Node) else c for c in self.children]
+        new_node = self.__class__(*new_children)
         if new_wire:
             new_node.output_signal = Node.new_node()
-        new_children = []
-        for c in self.children:
-            if isinstance(c,Node):
-                new_children.append(c.copy(new_wire))
-            else:
-                new_children.append(c)
-        new_node.children = new_children
+        else:
+            new_node.output_signal = self.output_signal
         return new_node
     
     def get_all_input_pattern(self,db=None):
@@ -202,6 +198,7 @@ class Node():
     def to_netlist(self, out=None):
         """
         Converts the node to a netlist
+        Returns a tuple (gate, connections, id)
         """
         netlist = []
         conn = {}
@@ -212,7 +209,7 @@ class Node():
                 conn[input] = c
 
         conn[self.output_pin] = self.output_signal if out is None else out
-        netlist.append((self.cell_name,conn))
+        netlist.append((self.cell_name,conn, self.node_id))
         for c in self.children:
             if isinstance(c, Node):
                 netlist += c.to_netlist()
