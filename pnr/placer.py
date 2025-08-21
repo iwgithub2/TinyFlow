@@ -13,13 +13,15 @@ import random
 
 # Define
 def simple_placement(db: TinyDB, lib : TinyLib):
+    random.seed(1)
     netlist = db.get_netlist()
 
     # parse netlist
     connection_list = parse_db_netlist(netlist, lib)
 
-    # Grid size should be an even number
-    grid_size = 10 # 10x10 grid
+    # Set grid size
+    db.set_die_area(5, 5)
+    grid_size = db.get_die_area() 
     
     # Place IO pads
     io_placement = place_io(db.get_inputs(), db.get_outputs(), grid_size)
@@ -29,8 +31,7 @@ def simple_placement(db: TinyDB, lib : TinyLib):
     
     finalplacement, cost = simulated_annealing(db.get_all_nodes().keys(), connection_list, grid_size, use_gui=False)
 
-    # visualize_final_placement(finalplacement, connection_list, grid_size, cost)
-    
+    visualize_final_placement(finalplacement, connection_list, grid_size, cost)
     # Update Position
     for node in finalplacement.keys():
         x, y = finalplacement[node]
@@ -93,17 +94,13 @@ def place_io(input_pins, output_pins, grid_size):
 
     input_pins: set()
     output_pins: set()
-    grid_size: even number
+    grid_size: (-x, x, -y, y)
 
     Returns a dictonary of the coordinates of each pin
     """
-
-    if grid_size <= 0:
-        raise ValueError("Grid size needs to be greater than 0")
     
-    half_grid = round(grid_size / 2)
-    x_left = -half_grid - 1
-    x_right = half_grid + 1
+    x_left = grid_size[0] - 1
+    x_right = grid_size[2] + 1
 
     input_pins = list(input_pins)
     output_pins = list(output_pins)
@@ -134,15 +131,15 @@ def hpwl(placement, nets):
     return total_cost
 
 def random_neighbor(placement, grid_size):
-    half_size = grid_size // 2
+    minus_x, minus_y, pos_x, pos_y = grid_size
     new_placement = placement.copy()
 
     # randomly pick a cell to move
     cell1 = random.choice(list(new_placement.keys()))
 
     # pick a random target location in centered coordinates
-    site_x = random.randint(-half_size, half_size - 1)
-    site_y = random.randint(-half_size, half_size - 1)
+    site_x = random.randint(minus_x, pos_x - 1)
+    site_y = random.randint(minus_y, pos_y - 1)
 
     # see if there is already cell in the site, if so then swap cells
     found_cell = False
@@ -158,8 +155,8 @@ def random_neighbor(placement, grid_size):
     return new_placement
 
 def simulated_annealing(cells, nets, grid_size, use_gui=False, initial_temp=100.0, final_temp=0.05, alpha=0.98, max_iter=1000):
-    half_size = grid_size // 2
-    positions = [(x, y) for x in range(-half_size, half_size) for y in range(-half_size, half_size)]
+    minus_x, minus_y, pos_x, pos_y = grid_size
+    positions = [(x, y) for x in range(minus_x, pos_x) for y in range(minus_y, pos_y)]
     random.shuffle(positions)
     placement = {cell: pos for cell, pos in zip(cells, positions)}
     cost = hpwl(placement, nets)
@@ -239,21 +236,21 @@ def draw_placement(ax, placement, nets, grid_size):
     We draw the placement of the cells shifted on a grid so it lines up nicely. The coordinates represent the center of each cell.
     """
     ax.clear()
-    half_size = grid_size // 2
+    minus_x, minus_y, pos_x, pos_y = grid_size
 
     # Axis limits in centered coords
-    ax.set_xlim(-half_size - 0.5, half_size - 0.5)
-    ax.set_ylim(-half_size - 0.5, half_size - 0.5)
+    ax.set_xlim(minus_x - 0.5, pos_x - 0.5)
+    ax.set_ylim(minus_y - 0.5, pos_y - 0.5)
     ax.set_aspect('equal')
 
     # Grid lines
-    ax.set_xticks(np.arange(-half_size - 0.5, half_size + 0.5, 1))
-    ax.set_yticks(np.arange(-half_size - 0.5, half_size + 0.5, 1))
+    ax.set_xticks(np.arange(minus_x - 0.5, pos_x + 0.5, 1))
+    ax.set_yticks(np.arange(minus_y - 0.5, pos_y + 0.5, 1))
     ax.grid(True, which='major', color='gray', linestyle='--', linewidth=0.5)
 
     # Show coordinate numbers
-    ax.set_xticklabels(np.arange(-half_size, half_size + 1, 1))
-    ax.set_yticklabels(np.arange(-half_size, half_size + 1, 1))
+    ax.set_xticklabels(np.arange(minus_x, pos_x + 1, 1))
+    ax.set_yticklabels(np.arange(minus_y, pos_y + 1, 1))
 
     # Draw cells (no shift needed now)
     for cell, (x, y) in placement.items():

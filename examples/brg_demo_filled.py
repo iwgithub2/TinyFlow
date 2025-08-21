@@ -5,7 +5,8 @@ from passes.ParserPass import parser_pass
 from passes.NandInvPass import nand_inv_pass
 from passes.TechMappingPass import tech_mapping_pass
 from utils.Grapher import dump_db_graph, dump_node_graph
-from placement.placer import simple_placement
+from pnr.placer import simple_placement
+from pnr.router import simple_router
 
 from db.LogicNodes import INV, AND, NAND, OR, NOR, XOR, XNOR
 
@@ -124,3 +125,4 @@ dump_db_graph(db_mapped,"generated/test/db_mapped")
 
 # Call the placer using the technology mapped version of the netlist
 simple_placement(db_mapped, lib)
+simple_router(db_mapped, lib)

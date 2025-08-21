@@ -22,7 +22,7 @@ class IOPort:
     def set_placement(self, x, y):
         self.placement = (x,y)
     
-    def is_placeed(self):
+    def is_placed(self):
         return self.placement is not None
     
     def __repr__(self):

@@ -63,6 +63,12 @@ class Node():
         self.placement = (x, y)
         if self.state.value < Node.State.POST_PLACE.value:
             self.state = Node.State.POST_PLACE
+    
+    def get_placement(self):
+        return self.placement
+    
+    def is_placed(self):
+        return self.placement is not None
 
     def get_all_nodes_with_ids(self):
         nodes = {}

@@ -2,6 +2,7 @@ from utils.PrettyStream import FAILED, PASSED, PrettyStream, err_msg, vprint, QU
 from db.Node import *
 from db.LogicNodes import *
 from db.IOPort import *
+from db.Routing import Net
 
 class TinyDB:
     """
@@ -19,6 +20,21 @@ class TinyDB:
         self.ports = {}
 
         self.node_registry = {}
+
+        self.nets = {}
+        self.die_area = None
+
+    def set_die_area(self, half_width, half_height):
+        """
+        Sets the grid size we are working with for the standard cells
+        """
+        if half_height < 0 or half_width < 0:
+            raise ValueError("Grid size needs to be positive")
+        
+        self.die_area = (-half_width, -half_height, half_width, half_height)
+    
+    def get_die_area(self):
+        return self.die_area
     
     def _register_node(self, node):
         """
@@ -158,6 +174,46 @@ class TinyDB:
     
     def get_outputs(self):
         return self.outputs.copy()
+    
+    def add_net(self, net_object):
+        """
+        Adds a complete Net object to the database.
+
+        Args:
+            net_object (Net): An instance of the Net class containing all its
+                              wire segments and vias.
+        """
+        if not isinstance(net_object, Net):
+            raise TypeError("Can only add Net objects to the database's netlist.")
+        
+        if net_object.name in self.nets:
+            raise ValueError(f"Net '{net_object.name}' already exists in the database.")
+            
+        self.nets[net_object.name] = net_object
+
+    def get_net_by_name(self, name):
+        """Retrieves a net object by its logical name."""
+        return self.nets.get(name)
+
+    def get_all_nets(self):
+        """Returns a dictionary of all nets in the database."""
+        return self.nets
+    
+    def get_all_placeable_items(self):
+        """
+        Get a unified dictionary of all items that need placement.
+        This includes all nodes (gates) and all I/O ports.
+
+        Returns:
+            dict: A dictionary mapping an item's unique ID (node_id for gates,
+                  port_name for ports) to the object itself.
+        """
+        placeable_items = {}
+        # Add all the nodes
+        placeable_items.update(self.node_registry)
+        # Add all the ports
+        placeable_items.update(self.ports)
+        return placeable_items
 
     def make_empty_copy(self):
         new_db = TinyDB(self.name)
