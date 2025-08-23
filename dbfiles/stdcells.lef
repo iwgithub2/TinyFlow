@@ -5,42 +5,174 @@
     "description": "Minimal LEF-style library"
   },
   "cells": {
-    "INV_X1": {
+    "NAND2D1": {
       "class": "CORE",
-      "size": [1.2, 2.7],
+      "size": [15, 10],
       "pins": {
-        "A": {
+        "a1": {
           "direction": "INPUT",
           "use": "SIGNAL",
           "ports": [
-            { "layer": "M1", "rect": [0.2, 0.6, 0.4, 0.8] }
+            { "layer": "M1", "rect": [2, 6, 4, 8] }
           ]
         },
-        "Y": {
+        "a2": {
+          "direction": "INPUT",
+          "use": "SIGNAL",
+          "ports": [
+            { "layer": "M1", "rect": [2, 6, 4, 8] }
+          ]
+        },
+        "y": {
           "direction": "OUTPUT",
           "use": "SIGNAL",
           "ports": [
-            { "layer": "M1", "rect": [0.8, 1.6, 1.0, 1.8] }
+            { "layer": "M1", "rect": [8, 16, 10, 18] }
           ]
         },
-        "VDD": {
-          "direction": "INOUT",
-          "use": "POWER",
-          "ports": [
-            { "layer": "M1", "rect": [0.0, 2.6, 1.2, 2.7] }
-          ]
-        },
-        "VSS": {
-          "direction": "INOUT",
-          "use": "GROUND",
-          "ports": [
-            { "layer": "M1", "rect": [0.0, 0.0, 1.2, 0.1] }
-          ]
-        }
       },
-      "obs": [
-        { "layer": "M2", "rect": [0.0, 0.0, 1.2, 2.7] }
-      ]
+    },
+    "MUX2D1": {
+      "class": "CORE",
+      "size": [15, 10],
+      "pins": {
+        "a1": {
+          "direction": "INPUT",
+          "use": "SIGNAL",
+          "ports": [
+            { "layer": "M1", "rect": [2, 6, 4, 8] }
+          ]
+        },
+        "a2": {
+          "direction": "INPUT",
+          "use": "SIGNAL",
+          "ports": [
+            { "layer": "M1", "rect": [2, 6, 4, 8] }
+          ]
+        },
+        "s": {
+          "direction": "INPUT",
+          "use": "SIGNAL",
+          "ports": [
+            { "layer": "M1", "rect": [2, 6, 4, 8] }
+          ]
+        },
+        "y": {
+          "direction": "OUTPUT",
+          "use": "SIGNAL",
+          "ports": [
+            { "layer": "M1", "rect": [8, 16, 10, 18] }
+          ]
+        },
+      },
+    },
+    "AOI21D1": {
+      "class": "CORE",
+      "size": [30, 10],
+      "pins": {
+        "a1": {
+          "direction": "INPUT",
+          "use": "SIGNAL",
+          "ports": [
+            { "layer": "M1", "rect": [2, 6, 4, 8] }
+          ]
+        },
+        "a2": {
+          "direction": "INPUT",
+          "use": "SIGNAL",
+          "ports": [
+            { "layer": "M1", "rect": [2, 6, 4, 8] }
+          ]
+        },
+        "b": {
+          "direction": "INPUT",
+          "use": "SIGNAL",
+          "ports": [
+            { "layer": "M1", "rect": [2, 6, 4, 8] }
+          ]
+        },
+        "z": {
+          "direction": "OUTPUT",
+          "use": "SIGNAL",
+          "ports": [
+            { "layer": "M1", "rect": [8, 16, 10, 18] }
+          ]
+        },
+      },
+    },
+    "XOR2D1": {
+      "class": "CORE",
+      "size": [15, 10],
+      "pins": {
+        "a1": {
+          "direction": "INPUT",
+          "use": "SIGNAL",
+          "ports": [
+            { "layer": "M1", "rect": [2, 6, 4, 8] }
+          ]
+        },
+        "a2": {
+          "direction": "INPUT",
+          "use": "SIGNAL",
+          "ports": [
+            { "layer": "M1", "rect": [2, 6, 4, 8] }
+          ]
+        },
+        "y": {
+          "direction": "OUTPUT",
+          "use": "SIGNAL",
+          "ports": [
+            { "layer": "M1", "rect": [8, 16, 10, 18] }
+          ]
+        },
+      },
+    },
+    "INVD1": {
+      "class": "CORE",
+      "size": [10, 10],
+      "pins": {
+        "a": {
+          "direction": "INPUT",
+          "use": "SIGNAL",
+          "ports": [
+            { "layer": "M1", "rect": [2, 6, 4, 8] }
+          ]
+        },
+        "out": {
+          "direction": "OUTPUT",
+          "use": "SIGNAL",
+          "ports": [
+            { "layer": "M1", "rect": [8, 16, 10, 18] }
+          ]
+        },
+      },
+    },
+    "NOR2D1": {
+      "class": "CORE",
+      "size": [15, 10],
+      "pins": {
+        "a1": {
+          "direction": "INPUT",
+          "use": "SIGNAL",
+          "ports": [
+            { "layer": "M1", "rect": [2, 6, 4, 8] }
+          ]
+        },
+        "a2": {
+          "direction": "INPUT",
+          "use": "SIGNAL",
+          "ports": [
+            { "layer": "M1", "rect": [2, 6, 4, 8] }
+          ]
+        },
+        "y": {
+          "direction": "OUTPUT",
+          "use": "SIGNAL",
+          "ports": [
+            { "layer": "M1", "rect": [8, 16, 10, 18] }
+          ]
+        },
+      },
     }
   }
 }
