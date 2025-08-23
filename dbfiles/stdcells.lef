@@ -1,0 +1,46 @@
+{
+  "library": {
+    "name": "TinyLEF",
+    "version": "1.0",
+    "description": "Minimal LEF-style library"
+  },
+  "cells": {
+    "INV_X1": {
+      "class": "CORE",
+      "size": [1.2, 2.7],
+      "pins": {
+        "A": {
+          "direction": "INPUT",
+          "use": "SIGNAL",
+          "ports": [
+            { "layer": "M1", "rect": [0.2, 0.6, 0.4, 0.8] }
+          ]
+        },
+        "Y": {
+          "direction": "OUTPUT",
+          "use": "SIGNAL",
+          "ports": [
+            { "layer": "M1", "rect": [0.8, 1.6, 1.0, 1.8] }
+          ]
+        },
+        "VDD": {
+          "direction": "INOUT",
+          "use": "POWER",
+          "ports": [
+            { "layer": "M1", "rect": [0.0, 2.6, 1.2, 2.7] }
+          ]
+        },
+        "VSS": {
+          "direction": "INOUT",
+          "use": "GROUND",
+          "ports": [
+            { "layer": "M1", "rect": [0.0, 0.0, 1.2, 0.1] }
+          ]
+        }
+      },
+      "obs": [
+        { "layer": "M2", "rect": [0.0, 0.0, 1.2, 2.7] }
+      ]
+    }
+  }
+}

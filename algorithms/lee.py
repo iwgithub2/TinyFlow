@@ -5,7 +5,7 @@ import math
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-def a_star_router(coordinates_dict, connection_list, grid_dimen, layers=1):
+def lee_router(coordinates_dict, connection_list, grid_dimen, layers=1):
     """ 
     coordinates_dict : Dictionary where keys will be a node (specific position of a pin) and the value is a tuple (x, y, z)
     connection_list : List of tuples where each tuple is a pair of ids of pins that need to be connected
@@ -58,7 +58,7 @@ def a_star_router(coordinates_dict, connection_list, grid_dimen, layers=1):
             del temp_obstacles[dest_id]
         
         # Path should be a list of nodes (coordinates) that is being used to reach the dest
-        path = a_star_search(source_pos, dest_pos, blocked_nodes=temp_obstacles, layers=layers, grid=grid_dimen, nodes=nodes)
+        path = lee_search(source_pos, dest_pos, blocked_nodes=temp_obstacles, layers=layers, grid=grid_dimen, nodes=nodes)
 
         if path:
             # Reduce connections needed for a cell
@@ -97,7 +97,7 @@ def heuristic(point_a, point_b):
     """
     return abs(point_a[0] - point_b[0]) + abs(point_a[1] - point_b[1]) + abs(point_a[2] - point_b[2])
 
-def a_star_search(start, goal, blocked_nodes, layers, grid, nodes, via_cost=5):
+def lee_search(start, goal, blocked_nodes, layers, grid, nodes, via_cost=5):
     """
     start         : (x, y, z)
     goal          : (x, y, z)
@@ -106,34 +106,24 @@ def a_star_search(start, goal, blocked_nodes, layers, grid, nodes, via_cost=5):
     grid          : Tuple for the grid size: (x_min, y_min, x_max, y_max)
     nodes         : Nodes of the pins which are allowed to be reused at start and end but not throughout
     """
-    open_set = []
-    heapq.heappush(open_set, (heuristic(start, goal), start))
-
-    came_from = {start : None}
-
-    g_score = {start: 0}
-    f_score = {start: heuristic(start, goal)}
-
-    nodes_explored = 0
-    x_min, y_min, x_max, y_max = grid
+    wavefront = {start: 0}
+    queue = collections.deque([start])
     
-    while open_set:
-        current_f_score, current = heapq.heappop(open_set)
+    x_min, y_min, x_max, y_max = grid
+    nodes_explored = 0
+    goal_found = False
+    
+    while queue:
+        current = queue.popleft()
         nodes_explored += 1
 
-        # Skip this node if it's a pin node that isn't the start or goal
-        if current in nodes and current != start and current != goal:
-            continue
-        
         if current == goal:
-            print(f"    -> A* Success! Explored {nodes_explored} nodes.")
-            path = []
-            while current in came_from:
-                path.append(current)
-                current = came_from[current]
-            path.append(start)
-            # Return reveresed list for correct path
-            return path[::-1]
+            goal_found = True
+            break
+
+        # Skip this node if it's a pin node that isn't the start or goal
+        if current in nodes and current != start:
+            continue
         
         x, y, z = current
         potential_neighbors = [(x+1, y, z), (x-1, y, z), (x, y+1, z), (x, y-1, z)]
@@ -154,20 +144,47 @@ def a_star_search(start, goal, blocked_nodes, layers, grid, nodes, via_cost=5):
             if neighbor in blocked_nodes.values() or neighbor in blocked_nodes['regular']:
                 continue
             
-            move_cost = via_cost if neighbor[2] != z else 1
-            tentative_g_score = g_score[current] + move_cost
+            if neighbor not in wavefront:
+                wavefront[neighbor] = wavefront[current] + 1
+                queue.append(neighbor)
+    
+    if not goal_found:
+        print(f"    -> Lee's Algorithm FAILED. Goal not reachable. Explored {nodes_explored} nodes.")
+        return None
 
-            # If we dont know the score of the neighbor or the score is somehow lower (could be a different path)
-            # Add teh score the list
-            if tentative_g_score < g_score.get(neighbor, math.inf):
-                came_from[neighbor] = current
-                g_score[neighbor] = tentative_g_score
-                f_score[neighbor] = tentative_g_score + heuristic(neighbor, goal)
-                # Push the neighbor to the priority queue
-                heapq.heappush(open_set, (f_score[neighbor], neighbor))
+    print(f"    -> Wave Propagation complete. Explored {nodes_explored} nodes. Starting Backtrace...")
+    path = []
+    current = goal
 
-    print(f"    -> A* FAILED. Connection {start} to {goal} failed. Explored {nodes_explored} nodes.")
-    return None
+    while current != start:
+        path.append(current)
+        x, y, z = current
+
+        min_label = float('inf')
+        next_node = None
+
+        potential_neighbors = [
+            (x + 1, y, z), (x - 1, y, z),
+            (x, y + 1, z), (x, y - 1, z),
+            (x, y, z + 1), (x, y, z - 1)
+        ]
+        
+        for neighbor in potential_neighbors:
+            if neighbor in wavefront:
+                if wavefront[neighbor] < min_label:
+                    min_label = wavefront[neighbor]
+                    next_node = neighbor
+        
+        if next_node:
+            current = next_node
+        else:
+            # This should not happen if wave propagation was successful
+            print("Error during traceback: No path found.")
+            return None
+    
+    path.append(start)
+
+    return path[::-1]
 
 def visualize_nets(points, routed_nets, title="3D Net Visualization"):
     """
@@ -217,7 +234,7 @@ def visualize_nets(points, routed_nets, title="3D Net Visualization"):
     ax.set_xlabel('X-axis')
     ax.set_ylabel('Y-axis')
     ax.set_zlabel('Z-axis')
-
+    
     # Add a legend to show which line corresponds to which net
     ax.legend()
     
@@ -249,6 +266,6 @@ if __name__ == "__main__":
         ('F', 'H'),
         ('G', 'H')
     ]
-    nets = a_star_router(points, connections, (-10, -10, 10, 10), layers=4)
+    nets = lee_router(points, connections, (-10, -10, 10, 10), layers=4)
     print("Nets: ", nets)
     visualize_nets(points, nets)

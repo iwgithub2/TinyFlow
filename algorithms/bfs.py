@@ -193,14 +193,6 @@ def visualize_nets(points, routed_nets, title="3D Net Visualization"):
     ax.set_xlabel('X-axis')
     ax.set_ylabel('Y-axis')
     ax.set_zlabel('Z-axis')
-    
-    # --- Lock the grid around the origin ---
-    # Find the maximum coordinate value to set symmetric axis limits.
-    max_coord = max(abs(c) for p in points.values() for c in p)
-    padding = 0.5  # A small buffer
-    ax.set_xlim(-padding, max_coord + padding)
-    ax.set_ylim(-padding, max_coord + padding)
-    ax.set_zlim(-padding, max_coord + padding)
 
     # Add a legend to show which line corresponds to which net
     ax.legend()

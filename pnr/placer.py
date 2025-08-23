@@ -1,7 +1,5 @@
 import random
 import math
-# import matplotlib.pyplot as plt
-# import matplotlib.patches as patches
 import numpy as np
 from db.TinyDB import TinyDB
 from db.TinyLib import TinyLib
@@ -28,7 +26,7 @@ def simple_placement(db: TinyDB, lib : TinyLib):
         x, y = io_placement[io]
         db.set_port_placement(io, x, y)
     
-    finalplacement, cost = simulated_annealing(db.get_all_nodes().keys(), connection_list, grid_size, use_gui=True)
+    finalplacement, cost = simulated_annealing(db.get_all_nodes().keys(), connection_list, grid_size, use_gui=False)
 
     visualize_final_placement(finalplacement, connection_list, grid_size, cost)
     # Update Position
@@ -36,8 +34,6 @@ def simple_placement(db: TinyDB, lib : TinyLib):
         x, y = finalplacement[node]
         db.set_node_placement(node, x, y)
     
-    # print(len(db.get_placed_nodes().keys()))
-
 def parse_db_netlist(netlist, lib):
     """
     Parses a netlist to create a list of connections (nets) between gates.
