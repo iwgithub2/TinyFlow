@@ -13,7 +13,6 @@ import random
 
 # Define
 def simple_placement(db: TinyDB, lib : TinyLib):
-    random.seed(1)
     netlist = db.get_netlist()
 
     # parse netlist
@@ -29,7 +28,7 @@ def simple_placement(db: TinyDB, lib : TinyLib):
         x, y = io_placement[io]
         db.set_port_placement(io, x, y)
     
-    finalplacement, cost = simulated_annealing(db.get_all_nodes().keys(), connection_list, grid_size, use_gui=False)
+    finalplacement, cost = simulated_annealing(db.get_all_nodes().keys(), connection_list, grid_size, use_gui=True)
 
     visualize_final_placement(finalplacement, connection_list, grid_size, cost)
     # Update Position
@@ -107,7 +106,7 @@ def place_io(input_pins, output_pins, grid_size):
     
     random.shuffle(input_pins)
     random.shuffle(output_pins)
-
+    # space evenly and constrain wiht cost
     io_placement = {}
 
     top_l = math.floor(len(input_pins) / 2)

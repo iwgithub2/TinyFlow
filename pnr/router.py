@@ -11,14 +11,13 @@ import sys
 import math
 
 def simple_router(db : TinyDB, lib : TinyLib):
-    random.seed(1)
     print("Running a simple router")
     simple_a_star_router(
         db=db,
         lib=lib,
         grid_resolution=1.0,  
         layers=['M1', 'M2', 'M3', 'M4'],
-        via_cost=2            # Make it 2x more expensive to change layer than to move 1 unit
+        via_cost=2  # Make it 2x more expensive to change layer than to move 1 unit
     )
 
     all_nets = db.get_all_nets()
@@ -255,6 +254,9 @@ def a_star_search(start, goal, blocked_nodes, blocked_edges, layers, via_cost, g
         
         for neighbor in neighbors:
             # If the node is occupied check other neighbors
+            # We check to makesure its not covering space above an unrouted std cell
+            # We check to make sure we arent going through a node a path has already been through
+            # We need to check to make sure we arent going through a node that is a a std cell
             if neighbor in blocked_nodes.values() or neighbor in blocked_nodes['regular']:
                 continue
             # If the edge is blocked we need to consider other neighbors
