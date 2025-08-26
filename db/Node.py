@@ -55,7 +55,7 @@ class Node():
         self.optimal_match = None
         self.cuts = []
 
-        self.node_id = str(uuid.uuid4())
+        self.node_id = str(uuid.uuid4())[:5]
         self.placement = None
         self.placement_attributes = {}
     

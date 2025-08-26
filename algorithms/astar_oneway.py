@@ -4,8 +4,9 @@ import random
 import math
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+from algorithms.visualize import visualize_nets
 
-def a_star_router(coordinates_dict, connection_list, grid_dimen, layers=1):
+def a_star_one_way_router(coordinates_dict, connection_list, grid_dimen, layers=1):
     """ 
     coordinates_dict : Dictionary where keys will be a node (specific position of a pin) and the value is a tuple (x, y, z)
     connection_list : List of tuples where each tuple is a pair of ids of pins that need to be connected
@@ -38,7 +39,7 @@ def a_star_router(coordinates_dict, connection_list, grid_dimen, layers=1):
     # This wont deal with fanout right now but lets leave this for now   
     # Counts for when to unblock
     id_counts = collections.defaultdict(int)
-    for id1, id2 in connections:
+    for id1, id2 in connection_list:
         id_counts[id1] += 1
         id_counts[id2] += 1
     
@@ -47,7 +48,7 @@ def a_star_router(coordinates_dict, connection_list, grid_dimen, layers=1):
     
     routed_count = 0
     failed_count = 0
-    for i, (source_id, dest_id) in enumerate(connections):
+    for i, (source_id, dest_id) in enumerate(connection_list):
         source_pos = coordinates_dict[source_id]
         dest_pos = coordinates_dict[dest_id]
 
@@ -58,7 +59,7 @@ def a_star_router(coordinates_dict, connection_list, grid_dimen, layers=1):
             del temp_obstacles[dest_id]
         
         # Path should be a list of nodes (coordinates) that is being used to reach the dest
-        path = a_star_search(source_pos, dest_pos, blocked_nodes=temp_obstacles, layers=layers, grid=grid_dimen, nodes=nodes)
+        path = a_star_one_way_search(source_pos, dest_pos, blocked_nodes=temp_obstacles, layers=layers, grid=grid_dimen, nodes=nodes)
 
         if path:
             # Reduce connections needed for a cell
@@ -97,7 +98,7 @@ def heuristic(point_a, point_b):
     """
     return abs(point_a[0] - point_b[0]) + abs(point_a[1] - point_b[1]) + abs(point_a[2] - point_b[2])
 
-def a_star_search(start, goal, blocked_nodes, layers, grid, nodes, via_cost=5):
+def a_star_one_way_search(start, goal, blocked_nodes, layers, grid, nodes, via_cost=5):
     """
     start         : (x, y, z)
     goal          : (x, y, z)
@@ -175,61 +176,6 @@ def a_star_search(start, goal, blocked_nodes, layers, grid, nodes, via_cost=5):
     print(f"    -> A* FAILED. Connection {start} to {goal} failed. Explored {nodes_explored} nodes.")
     return None
 
-def visualize_nets(points, routed_nets, title="3D Net Visualization"):
-    """
-    Plots a 3D visualization of points and their routed paths.
-
-    Args:
-        points (dict): A dictionary where keys are point IDs (e.g., 'A') and 
-                       values are 3D coordinates (x, y, z).
-        routed_nets (dict): A dictionary where keys are tuples representing
-                            the start and end points of a net (e.g., ('A', 'H')),
-                            and values are a list of intermediate points that make up
-                            the routed path.
-        title (str): The title for the plot.
-    """
-    fig = plt.figure(figsize=(10, 8))
-    ax = fig.add_subplot(111, projection='3d')
-
-    # --- Plot the routed nets ---
-    # We will iterate through the routed_nets dictionary to draw each path.
-    # Each path is a list of points (tuples of coordinates).
-    print("Plotting routed nets...")
-    for net_id, path in routed_nets.items():
-        # Unzip the coordinates into separate x, y, z lists for plotting
-        x_coords = [p[0] for p in path]
-        y_coords = [p[1] for p in path]
-        z_coords = [p[2] for p in path]
-        
-        # Plot the path as a line. Use different markers and styles for clarity.
-        ax.plot(x_coords, y_coords, z_coords, marker='o', linestyle='-', label=f"Net {net_id[0]}-{net_id[1]}")
-
-    # --- Plot the individual points ---
-    # We plot all the nodes, regardless of whether they are on a path or not.
-    print("Plotting all individual points...")
-    x_points = [p[0] for p in points.values()]
-    y_points = [p[1] for p in points.values()]
-    z_points = [p[2] for p in points.values()]
-    
-    # Plot the points as markers. We use 'o' for circles.
-    ax.scatter(x_points, y_points, z_points, c='black', s=100)
-
-    # Add text labels to each point for easy identification
-    for point_id, coords in points.items():
-        ax.text(coords[0], coords[1], coords[2], point_id, fontsize=12, ha='right')
-
-    # --- Set plot properties ---
-    ax.set_title(title)
-    ax.set_xlabel('X-axis')
-    ax.set_ylabel('Y-axis')
-    ax.set_zlabel('Z-axis')
-
-    # Add a legend to show which line corresponds to which net
-    ax.legend()
-    
-    # Display the plot
-    plt.show()
-
 if __name__ == "__main__":
     points = {
         'A': (0, 0, 0),
@@ -255,6 +201,6 @@ if __name__ == "__main__":
         ('F', 'H'),
         ('G', 'H')
     ]
-    nets = a_star_router(points, connections, (-10, -10, 10, 10), layers=4)
+    nets = a_star_one_way_router(points, connections, (-10, -10, 10, 10), layers=4)
     print("Nets: ", nets)
     visualize_nets(points, nets)

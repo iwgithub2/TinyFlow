@@ -7,6 +7,7 @@ from passes.TechMappingPass import tech_mapping_pass
 from utils.Grapher import dump_db_graph, dump_node_graph
 from pnr.placer import simple_placement
 from pnr.router import simple_router
+from db.TinyLef import TinyLef
 
 from db.LogicNodes import INV, AND, NAND, OR, NOR, XOR, XNOR
 
@@ -124,5 +125,6 @@ dump_db_graph(db_mapped,"generated/test/db_mapped")
 # assert(db_mapped.logical_eq(full_adder))
 
 # Call the placer using the technology mapped version of the netlist
+lef = TinyLef("dbfiles/stdcells.lef")
 simple_placement(db_mapped, lib)
-simple_router(db_mapped, lib)
+simple_router(db_mapped, lib, lef)

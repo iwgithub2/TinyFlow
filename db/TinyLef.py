@@ -7,7 +7,6 @@ class LefCell:
         self.cell_class = data.get("class", "CORE")
         self.size = tuple(data.get("size", [0, 0]))
         self.pins = data.get("pins", {})
-        self.obs = data.get("obs", [])
 
     def __repr__(self):
         return f"<LefCell {self.name} size={self.size} pins={list(self.pins.keys())}>"
@@ -21,7 +20,7 @@ class LefCell:
                 p << [f"Pin {pin}: dir={pdata['direction']} use={pdata['use']}"]
         return p.cache
 
-class TinyLEF:
+class TinyLef:
     def __init__(self, lef_file="dbfiles/stdcells.lef"):
         self.cells = {}
         self.libname = None
