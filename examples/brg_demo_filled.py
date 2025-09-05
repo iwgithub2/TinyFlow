@@ -126,5 +126,5 @@ dump_db_graph(db_mapped,"generated/test/db_mapped")
 
 # Call the placer using the technology mapped version of the netlist
 lef = TinyLef("dbfiles/stdcells.lef")
-simple_placement(db_mapped, lib)
+simple_placement(db_mapped)
 simple_router(db_mapped, lib, lef)

@@ -92,12 +92,6 @@ def lee_router(coordinates_dict, connection_list, grid_dimen, layers=1):
 
     return routed_nets
 
-def heuristic(point_a, point_b):
-    """
-    Calculates the Manhattan distance heuristic between two 3D points.
-    """
-    return abs(point_a[0] - point_b[0]) + abs(point_a[1] - point_b[1]) + abs(point_a[2] - point_b[2])
-
 def lee_search(start, goal, blocked_nodes, layers, grid, nodes, via_cost=5):
     """
     start         : (x, y, z)
